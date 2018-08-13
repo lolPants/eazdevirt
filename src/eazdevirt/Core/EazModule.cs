@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using dnlib.DotNet;
+using dnlib.DotNet.Emit;
 using dnlib.DotNet.Writer;
 using eazdevirt.Types;
 
@@ -98,7 +99,7 @@ namespace eazdevirt
 		public void Write(String filepath, Boolean noThrow = false)
 		{
 			var options = new ModuleWriterOptions(this.Module);
-			options.MetaDataOptions.Flags |= MetaDataFlags.PreserveAll;
+			options.MetadataOptions.Flags |= MetadataFlags.PreserveAll;
 
 			if (noThrow)
 				options.Logger = DummyLogger.NoThrowInstance;
@@ -136,9 +137,9 @@ namespace eazdevirt
 				throw new Exception("Unable to find resource");
 
 			if (!rawStream)
-				return streamType.CreateStream(resource.GetResourceStream(), this.ResourceCryptoKey);
+				return streamType.CreateStream(resource.GetReader().AsStream(), this.ResourceCryptoKey);
 			else
-				return resource.GetResourceStream();
+				return resource.GetReader().AsStream();
 		}
 
 		/// <summary>
@@ -147,7 +148,21 @@ namespace eazdevirt
 		/// <returns>Crypto stream TypeDef, or null if none found</returns>
 		public CryptoStreamDef FindCryptoStreamType()
 		{
-		    foreach (var typeDef in this.Module.Types.Where(type =>
+		    foreach (TypeDef type in Module.Types)
+		    {
+		        if (!type.HasMethods) continue;
+		        foreach (MethodDef method in type.Methods)
+		        {
+		            if (!method.HasBody || !method.Body.HasInstructions) continue;
+		            foreach (Instruction instruction in method.Body.Instructions)
+		            {
+		                if (instruction.OpCode == OpCodes.Callvirt && ((IMethod)instruction.Operand).Name == "get_CanRead")
+		                    return new CryptoStreamDefV2(type);
+		            }
+		        }
+		    }
+
+            foreach (var typeDef in this.Module.Types.Where(type =>
 		            type.BaseType != null
 		            && type.BaseType.FullName.Equals(typeof(System.IO.Stream).FullName))) {
 		        if (CryptoStreamDefV2.Is(typeDef))

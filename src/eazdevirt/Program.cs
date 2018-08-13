@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using de4dot.blocks;
+using de4dot.blocks.cflow;
 using dnlib.DotNet;
 using Mono.Options;
 using eazdevirt.IO;
@@ -189,6 +191,16 @@ namespace eazdevirt
 				asmResolver.DefaultModuleContext = modCtx;
 				moduleDef.Context = modCtx;
 
+			    foreach (TypeDef typeDef in moduleDef.Types)
+			    {
+			        if(!typeDef.HasMethods) continue;
+			        foreach (MethodDef method in typeDef.Methods)
+			        {
+                        if(!method.HasBody || !method.Body.HasInstructions) continue;
+                        BlockDeobfuscator(method);
+			        }
+			    }
+
 				module = new EazModule(moduleDef, logger);
 			}
 			catch (IOException e)
@@ -202,7 +214,26 @@ namespace eazdevirt
 			return true;
 		}
 
-		static void WritePartiallyDevirtualizedMethod(VirtualizedMethodBodyReader reader)
+	    public static void BlockDeobfuscator(MethodDef methodDef)
+	    {
+	        var cfDeob = new BlocksCflowDeobfuscator();
+	        var blocks = new Blocks(methodDef);
+	        blocks.RemoveDeadBlocks();
+	        blocks.RepartitionBlocks();
+	        blocks.UpdateBlocks();
+	        blocks.Method.Body.SimplifyBranches();
+	        blocks.Method.Body.OptimizeBranches();
+	        cfDeob.Initialize(blocks);
+	        cfDeob.Deobfuscate();
+	        blocks.RepartitionBlocks();
+	        blocks.RemoveDeadBlocks();
+	        blocks.OptimizeLocals();
+	        blocks.Method.Body.SimplifyBranches();
+	        blocks.Method.Body.OptimizeBranches();
+	        blocks.GetCode(out var instructions, out var exceptionHandlers);
+	        DotNetUtils.RestoreBody(methodDef, instructions, exceptionHandlers);
+	    }
+        static void WritePartiallyDevirtualizedMethod(VirtualizedMethodBodyReader reader)
 		{
 			if (!reader.HasInstructions)
 				return;

@@ -64,13 +64,18 @@ namespace eazdevirt
 		/// <returns>Position</returns>
 		public virtual Int64 ToPosition(String str, Int32 cryptoKey)
 		{
-			Byte[] array = this.Convert(str);
-			MemoryStream memoryStream = new MemoryStream(array);
-			CryptoStreamBase stream = _streamType.CreateStream(memoryStream, cryptoKey);
-			BinaryReader binaryReader = new BinaryReader(stream);
-			Int64 result = binaryReader.ReadInt64();
-			memoryStream.Dispose();
-			return result;
+		    var assembly = MethodStub.ModuleAssembly;
+
+            var getPositionMethod = assembly.ManifestModule.ResolveMethod(MethodStub.GetPositionMethod.MDToken.ToInt32());
+
+		    return (Int64)getPositionMethod.Invoke(getPositionMethod.DeclaringType?.GetConstructors()[1].Invoke(new[] { Activator.CreateInstance(assembly.ManifestModule.ResolveType(MethodStub.GetPositionMethodContructor.MDToken.ToInt32())) }), new object[] { str });
+            //			Byte[] array = this.Convert(str);
+            //			MemoryStream memoryStream = new MemoryStream(array);
+            //			CryptoStreamBase stream = _streamType.CreateStream(memoryStream, cryptoKey);
+            //			BinaryReader binaryReader = new BinaryReader(stream);
+            //			Int64 result = binaryReader.ReadInt64();
+            //			memoryStream.Dispose();
+            //          return result;
 		}
 
 		/// <summary>

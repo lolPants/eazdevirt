@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 
@@ -45,6 +46,21 @@ namespace eazdevirt
 		/// The string used to specify the file position to read at.
 		/// </summary>
 		public String PositionString { get; private set; }
+	    
+        /// <summary>
+        /// The method to get specify the file position to read at.
+        /// </summary>
+        public static MethodDef GetPositionMethod { get; private set; }
+
+        /// <summary>
+        /// The method to get specify the file position to read at.
+        /// </summary>
+        public static Assembly ModuleAssembly { get; private set; }
+
+        /// <summary>
+        /// The type of constructor for method to get specify the file position to read at.
+        /// </summary>
+        public static TypeDef GetPositionMethodContructor { get; private set; }
 
 		public Int64 Position { get; private set; }
 
@@ -88,21 +104,28 @@ namespace eazdevirt
 			var instrs = this.Method.Body.Instructions;
 			this.VirtualCallIndex = -1;
 
-			// Get info on virtual call method
-			for(int i = 0; i < instrs.Count; i++)
+		    GetPositionMethodContructor = ((IMethod)Helpers.GetFirstCalledMethod(this.Method).Body.Instructions.FirstOrDefault(instruction => instruction.OpCode == OpCodes.Newobj)?.Operand)?.DeclaringType.ResolveTypeDef();
+
+		    if (GetPositionMethodContructor == null)
+		        throw new Exception("Couldn't get GetPositionMethodContructor");
+
+		    ModuleAssembly = Assembly.LoadFrom(Module.Location);
+
+            // Get info on virtual call method
+            for (int i = 0; i < instrs.Count; i++)
 			{
 				var instr = instrs[i];
 
 				MethodDef method = null;
-				if(instr.OpCode.Code == dnlib.DotNet.Emit.Code.Call
-				&& (method = Helpers.TryTransformCallOperand(instr.Operand)) != null
-				&& IsVirtualCallMethod(method))
-				{
-					this.VirtualCallMethod = method;
-					this.VirtualCallIndex = i;
-					break;
-				}
-			}
+			    if (instr.OpCode.Code == dnlib.DotNet.Emit.Code.Call
+			        && (method = Helpers.TryTransformCallOperand(instr.Operand)) != null
+			        && IsVirtualCallMethod(method))
+			    {
+			        this.VirtualCallMethod = method;
+			        this.VirtualCallIndex = i;
+			        break;
+			    }
+            }
 
 			if (this.VirtualCallMethod == null)
 				throw new Exception("Couldn't get VirtualCallMethod");
@@ -191,7 +214,24 @@ namespace eazdevirt
             if (method == null)
 				throw new Exception("Rabbit-Hole strategy of finding the resource crypto key failed");
 
-			var instructions = method.Body.Instructions;
+		    for (int i = 0; i < prev.Body.Instructions.Count; i++)
+		    {
+		        Instruction instruction = prev.Body.Instructions[i];
+		        if (instruction.OpCode == OpCodes.Call)
+		        {
+		            MethodDef meth = ((IMethod)instruction.Operand).ResolveMethodDef();
+		            if (meth != null && meth.ReturnType.FullName.Equals("System.Int64") && meth.Parameters[1].Type.FullName.Equals("System.String"))
+		            {
+		                GetPositionMethod = meth.ResolveMethodDef();
+		                break;
+		            }
+		        }
+		    }
+
+		    if (GetPositionMethod == null)
+		        throw new Exception("Couldn't get GetPositionMethod");
+
+            var instructions = method.Body.Instructions;
 			var count = method.Body.Instructions.Count;
 
 			if (!method.HasBody || !method.Body.HasInstructions || count < 2
