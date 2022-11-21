@@ -11,8 +11,8 @@ namespace eazdevirt.Detection.V1.Ext
 		/// OpCode pattern seen in the Ldc_I4_C delegate methods.
 		/// </summary>
 		private static readonly Code[] Pattern_Ldc_I4_C = new Code[] {
-			Code.Ldarg_0, Code.Newobj, Code.Stloc_0, Code.Ldloc_0, Code.Ldc_I4, // Code.Ldc_I4 changes depending on _C
-			Code.Callvirt, Code.Ldloc_0, Code.Call, Code.Ret
+			Code.Ldarg_0, Code.Newobj, Code.Dup, Code.Ldc_I4, // Code.Ldc_I4 changes depending on _C
+			Code.Callvirt, Code.Call, Code.Ret
 		};
 
 		private static Boolean Is_Ldc_I4_C(VirtualOpCode ins, Code code)
@@ -90,6 +90,11 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean _Is_Ldc(VirtualOpCode ins, OperandType expectedOperandType)
 		{
 			OperandType operandType;
+			if(ins.VirtualCode == 822558103)
+			{
+				Console.WriteLine(ins);
+			}
+
 			return ins.MatchesEntire(Pattern_Ldc)
 				&& ins.TryGetOperandType(out operandType)
 				&& operandType == expectedOperandType;

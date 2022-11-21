@@ -69,7 +69,7 @@ namespace eazdevirt.Core
             array[2] = bytes[0];
             array[4] = bytes[5];
             array[3] = bytes[6];
-            return ToBinaryReader(array).ReadSingle();
+            return ToBinaryReader(array).ReadDouble();
         }
 
         public override decimal ReadDecimal()

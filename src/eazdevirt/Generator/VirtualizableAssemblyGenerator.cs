@@ -57,7 +57,7 @@ namespace eazdevirt.Generator
 		}
 
 		public void AddIndMethod()
-		{
+		{ 
 			this.AddMethod("IndMethod", VirtualizableAssemblyGenerator.GetIndInstructions);
 		}
 
@@ -65,6 +65,11 @@ namespace eazdevirt.Generator
 		{
 			this.AddMethod("StaticFieldMethod", VirtualizableAssemblyGenerator.GetStaticFieldInstructions);
 		}
+
+		public void AddLdcMethod()
+		{
+            this.AddMethod("LdcMethod", VirtualizableAssemblyGenerator.GetLdcInstructions);
+        }
 
 		/// <summary>
 		/// Add a virtualizable method.
@@ -227,11 +232,43 @@ namespace eazdevirt.Generator
 			return assembly;
 		}
 
-		/// <summary>
-		/// Get a sensible list of all Conv_* instructions.
-		/// </summary>
-		/// <returns>Instructions</returns>
-		static IList<Instruction> GetConvInstructions(ModuleDef module, TypeDef mainType)
+        /// <summary>
+        /// Get a sensible list of all Ldc_* instructions.
+        /// </summary>
+        /// <returns>Instructions</returns>
+        static IList<Instruction> GetLdcInstructions(ModuleDef module, TypeDef mainType)
+        {
+            var all = new List<Instruction>();
+
+			all.Add(OpCodes.Ldc_I4.ToInstruction(0x12345678));
+
+            all.Add(OpCodes.Ldc_I4_0.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_1.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_2.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_3.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_4.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_5.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_6.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_7.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_8.ToInstruction());
+
+            all.Add(OpCodes.Ldc_I4_M1.ToInstruction());
+            all.Add(OpCodes.Ldc_I4_S.ToInstruction((sbyte)69));
+
+            all.Add(OpCodes.Ldc_I8.ToInstruction((long)21));
+            all.Add(OpCodes.Ldc_R4.ToInstruction((float)22));
+            all.Add(OpCodes.Ldc_R8.ToInstruction((double)23));
+
+            all.Add(OpCodes.Ret.ToInstruction());
+
+            return all;
+        }
+
+        /// <summary>
+        /// Get a sensible list of all Conv_* instructions.
+        /// </summary>
+        /// <returns>Instructions</returns>
+        static IList<Instruction> GetConvInstructions(ModuleDef module, TypeDef mainType)
 		{
 			var all = new List<Instruction>();
 
@@ -346,7 +383,8 @@ namespace eazdevirt.Generator
 			all.Add(OpCodes.Stind_R8.ToInstruction());
 			all.Add(OpCodes.Stind_Ref.ToInstruction());
 
-			return all;
+            all.Add(OpCodes.Ret.ToInstruction());
+            return all;
 		}
 
 		/// <summary>

@@ -26,10 +26,13 @@ namespace eazdevirt
 		/// </summary>
 		public Dictionary<Int32, VirtualOpCode> IdentifiedOpCodes;
 
-		/// <summary>
-		/// Embedded resource string identifier.
-		/// </summary>
-		public String ResourceStringId { get; private set; }
+
+        public Dictionary<Int32, VirtualOpCode> AllOpCodes;
+
+        /// <summary>
+        /// Embedded resource string identifier.
+        /// </summary>
+        public String ResourceStringId { get; private set; }
 
 		/// <summary>
 		/// Embedded resource crypto key.
@@ -301,11 +304,25 @@ namespace eazdevirt
 		private void InitializeIdentifiedOpCodes()
 		{
 			this.IdentifiedOpCodes = new Dictionary<Int32, VirtualOpCode>();
+            this.AllOpCodes = new Dictionary<Int32, VirtualOpCode>();
 
-			this.VirtualInstructions = VirtualOpCode.FindAllInstructions(this, this.VType.Type);
+            this.VirtualInstructions = VirtualOpCode.FindAllInstructions(this, this.VType.Type);
 			var identified = this.VirtualInstructions.Where((instruction) => instruction.IsIdentified);
 
 			Boolean warningOccurred = false;
+
+			foreach (var ins in VirtualInstructions)
+			{
+				this.AllOpCodes.Add(ins.VirtualCode, ins);
+				/*if(ins.VirtualCode == 822558103)
+				{
+					Console.WriteLine(ins);
+				}
+				if(ins.IsIdentified && ins.HasCILOpCode && ins.OpCode == Code.Ldloc_0)
+                {
+                    Console.WriteLine(ins);
+                }*/
+			}
 
 			foreach (var instruction in identified)
 			{

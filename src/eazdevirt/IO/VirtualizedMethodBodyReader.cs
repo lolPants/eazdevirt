@@ -388,11 +388,22 @@ namespace eazdevirt.IO
 
 			VirtualOpCode virtualInstruction;
 			if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+			{
 #if DEBUG
-                throw new Exception(String.Format("Unknown virtual opcode: {0} (0x{0:X8})", virtualOpcode));
+				this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction);
+
+				Console.WriteLine("couldn't find opcode");
+
+				throw new Exception(String.Format("Unknown virtual opcode: {0} (0x{0:X8})", virtualOpcode));
 #else
+
                 throw new OriginalOpcodeUnknownException(virtualInstruction);
 #endif
+			}
+			else
+			{
+				Console.WriteLine("Found opcode {0}", virtualInstruction.OpCode);
+			}
 
 			this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
 
