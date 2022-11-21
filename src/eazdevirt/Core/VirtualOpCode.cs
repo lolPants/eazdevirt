@@ -335,19 +335,21 @@ namespace eazdevirt
 		public OperandType GetOperandType()
 		{
 			switch(this.VirtualOperandType)
-			{
-				case 0: return OperandType.InlineBrTarget;
-                case 10: return OperandType.InlineI;
+            {
+				case 1: return OperandType.ShortInlineR;
 				case 5: return OperandType.InlineI8;
+				case 6: return OperandType.InlineR;
+                case 9: return OperandType.ShortInlineI;
+                case 10: return OperandType.InlineI;
+
+				// vvvvv no clue if these are correct
+                case 0: return OperandType.InlineBrTarget;
 				case 4: return OperandType.InlineMethod;
 				case 999: return OperandType.InlineNone;
-				case 6: return OperandType.InlineR;
 				case 2: return OperandType.InlineString;
 				case 13: return OperandType.InlineType;
 				case 11: return OperandType.InlineSwitch;
 				case 14: return OperandType.InlineVar;
-				case 9: return OperandType.ShortInlineI;
-				case 1: return OperandType.ShortInlineR;
 				case 18: return OperandType.ShortInlineVar;
 				default: throw new Exception("Unknown virtual operand type");
 			}

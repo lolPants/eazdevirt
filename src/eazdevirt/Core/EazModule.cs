@@ -314,14 +314,6 @@ namespace eazdevirt
 			foreach (var ins in VirtualInstructions)
 			{
 				this.AllOpCodes.Add(ins.VirtualCode, ins);
-				/*if(ins.VirtualCode == 822558103)
-				{
-					Console.WriteLine(ins);
-				}
-				if(ins.IsIdentified && ins.HasCILOpCode && ins.OpCode == Code.Ldloc_0)
-                {
-                    Console.WriteLine(ins);
-                }*/
 			}
 
 			foreach (var instruction in identified)

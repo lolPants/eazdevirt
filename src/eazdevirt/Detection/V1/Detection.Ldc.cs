@@ -90,11 +90,6 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean _Is_Ldc(VirtualOpCode ins, OperandType expectedOperandType)
 		{
 			OperandType operandType;
-			if(ins.VirtualCode == 822558103)
-			{
-				Console.WriteLine(ins);
-			}
-
 			return ins.MatchesEntire(Pattern_Ldc)
 				&& ins.TryGetOperandType(out operandType)
 				&& operandType == expectedOperandType;
