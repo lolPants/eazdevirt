@@ -176,9 +176,16 @@ namespace eazdevirt.IO
 			if (GetInstructionAfter(handler.HandlerEnd) != null)
 				handler.HandlerEnd = GetInstructionAfter(handler.HandlerEnd);
 
-			handler.FilterStart = GetInstruction(this.GetRealOffset(deserialized.VirtualFilterStart));
 
-			return handler;
+			handler.FilterStart = null;
+			if (handler.HandlerType == ExceptionHandlerType.Filter)
+			{
+                handler.FilterStart = GetInstruction(this.GetRealOffset(deserialized.VirtualFilterStart));
+            }
+
+
+
+            return handler;
 		}
 
 		private void Initialize()
@@ -386,8 +393,10 @@ namespace eazdevirt.IO
 			Int32 virtualOpcode = this.Reader.ReadInt32Special();
 			this.LastVirtualOpCode = virtualOpcode;
 
-			VirtualOpCode virtualInstruction;
-			if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+            VirtualOpCode virtualInstruction;
+
+
+            if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
 			{
 #if DEBUG
 				this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction);
@@ -825,7 +834,8 @@ namespace eazdevirt.IO
 					switch(VirtualHandlerType)
 					{
 						case 0: return ExceptionHandlerType.Catch;
-						case 2: return ExceptionHandlerType.Finally;
+						case 1: return ExceptionHandlerType.Finally;
+						case 4: return ExceptionHandlerType.Filter;
 						default: throw new NotSupportedException();
 					}
 				}
@@ -847,23 +857,15 @@ namespace eazdevirt.IO
 
 			private void Deserialize(BinaryReader reader)
 			{
-                /*
-				this.VirtualHandlerType = reader.ReadInt32();
+				this.VirtualHandlerType = reader.ReadByte();
 				this.VirtualCatchType = reader.ReadInt32();
-				this.VirtualTryStart = reader.ReadUInt32();
-				this.VirtualTryLength = reader.ReadUInt32();
-				this.VirtualHandlerStart = reader.ReadUInt32();
-				this.VirtualHandlerLength = reader.ReadUInt32();
-				this.VirtualFilterStart = reader.ReadUInt32();
-                */
 
-			    this.VirtualHandlerType = reader.ReadByte();
-			    this.VirtualCatchType = reader.ReadInt32();
-			    reader.ReadUInt32();
-			    reader.ReadUInt32();
-			    reader.ReadUInt32();
-			    reader.ReadUInt32();
-            }
+				this.VirtualTryStart = reader.ReadUInt32();
+				this.VirtualHandlerStart = reader.ReadUInt32();
+				this.VirtualTryLength = reader.ReadUInt32();
+
+				this.VirtualFilterStart = reader.ReadUInt32();
+			}
 		}
 	}
 }

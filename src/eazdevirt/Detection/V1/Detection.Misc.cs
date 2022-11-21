@@ -131,20 +131,31 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			return ins.DelegateMethod.Matches(
 				Code.Call, Code.Brtrue_S, Code.Ldc_I4_0, Code.Br_S, Code.Ldc_I4_1,
-				Code.Callvirt, Code.Ldloc_2, Code.Call, Code.Ret
+				Code.Callvirt, Code.Call, Code.Ret
 			) && ins.DelegateMethod.MatchesIndirect(
 				Code.Ldloc_S, Code.Ldloc_S, Code.Cgt, Code.Stloc_0, Code.Br_S,
 				Code.Ldc_I4_0, Code.Stloc_0, Code.Ldloc_0, Code.Ret
 			);
-		}
 
-		[Detect(Code.Cgt_Un)]
+            //maybe 
+
+            /*return ins.DelegateMethod.Matches(new Code[] {
+                Code.Dup, Code.Ldloc_1, Code.Ldloc_0, Code.Call, Code.Brtrue_S, Code.Ldc_I4_0, Code.Br_S, Code.Ldc_I4_1,
+                Code.Callvirt, Code.Call, Code.Ret
+            }) && ins.DelegateMethod.MatchesIndirect(Code.Ldarg_0, Code.Ldfld, Code.Callvirt, Code.Ret)
+            && ins.DelegateMethod.Calls().ToList()[3].ResolveMethodDef().Matches(Code.Cgt)
+            && ins.DelegateMethod.Calls().ToList()[3].ResolveMethodDef().Matches(Code.Cgt, Code.Stloc_0, Code.Ldloc_0, Code.Ret);*/
+        }
+
+        [Detect(Code.Cgt_Un)]
 		public static Boolean Is_Cgt_Un(this VirtualOpCode ins)
 		{
 			return ins.DelegateMethod.Matches(new Code[] {
-				Code.Call, Code.Brtrue_S, Code.Ldc_I4_0, Code.Br_S, Code.Ldc_I4_1,
-				Code.Callvirt, Code.Ldloc_2, Code.Call, Code.Ret
-			}) && ins.DelegateMethod.MatchesIndirect(Pattern_Cgt_Un);
+                Code.Dup, Code.Ldloc_1, Code.Ldloc_0, Code.Call, Code.Brtrue_S, Code.Ldc_I4_0, Code.Br_S, Code.Ldc_I4_1,
+				Code.Callvirt, Code.Call, Code.Ret
+			}) && ins.DelegateMethod.MatchesIndirect(Code.Ldarg_0, Code.Ldfld, Code.Callvirt, Code.Ret)
+            && ins.DelegateMethod.Calls().ToList()[3].ResolveMethodDef().Matches(Code.Cgt)
+            && ins.DelegateMethod.Calls().ToList()[3].ResolveMethodDef().Matches(Code.Ceq, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
 		}
 
 		[Detect(Code.Ckfinite)]
@@ -177,8 +188,8 @@ namespace eazdevirt.Detection.V1.Ext
 			return ins.DelegateMethod.MatchesEntire(
 				Code.Ldarg_0, Code.Call, Code.Ret
 			) && ins.DelegateMethod.MatchesIndirect(
-				Code.Ldarg_0, Code.Ldfld, Code.Callvirt, Code.Ldarg_0, Code.Ldloc_0,
-				Code.Callvirt, Code.Call, Code.Ret
+				Code.Ldarg_0, Code.Ldfld, Code.Callvirt, Code.Ldarg_0, Code.Ldloca_S,
+				Code.Call, Code.Call, Code.Ret
 			);
 		}
 
@@ -241,7 +252,7 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Ldfld(this VirtualOpCode ins)
 		{
 			return ins.Matches(new Code[] {
-				Code.Ldarg_0, Code.Ldloc_1, Code.Ldloc_3, Code.Callvirt, Code.Ldloc_1,
+				Code.Ldarg_0, Code.Ldloc_1, Code.Ldloc_2, Code.Callvirt, Code.Ldloc_1,
 				Code.Callvirt, Code.Call, Code.Call, Code.Ret
 			}) && ins.DelegateMethod.Calls().Any((called) =>
 			{
@@ -268,11 +279,11 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			MethodDef called = null;
 			var sub = ins.DelegateMethod.Find(new Code[] {
-				Code.Ldarg_0, Code.Newobj, Code.Stloc_2, Code.Ldloc_2, Code.Ldloc_1,
-				Code.Callvirt, Code.Ldloc_2, Code.Call, Code.Ret
+				Code.Ldarg_0, Code.Newobj, Code.Dup, Code.Ldloc_1,
+				Code.Callvirt, Code.Call, Code.Ret
 			});
 			return sub != null
-				&& (called = ((MethodDef)sub[5].Operand)) != null
+				&& (called = ((MethodDef)sub[4].Operand)) != null
 				&& called.Parameters.Count >= 2
 				&& called.Parameters[1].Type.FullName.Equals("System.Reflection.MethodBase");
 		}
@@ -442,7 +453,7 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Stfld(this VirtualOpCode ins)
 		{
 			return ins.Matches(new Code[] {
-				Code.Ldarg_0, Code.Ldloc_2, Code.Ldloc_3, Code.Ldnull, Code.Call,
+				Code.Ldarg_0, Code.Ldloc_1, Code.Ldloc_0, Code.Ldnull, Code.Call,
 				Code.Call, Code.Ret
 			}) && ins.DelegateMethod.Calls().Any((called) =>
 			{
@@ -487,6 +498,14 @@ namespace eazdevirt.Detection.V1.Ext
 				Code.Ldloc_2, Code.Callvirt, Code.Stloc_3, Code.Ldloc_3, Code.Ldloc_1,
 				Code.Call, Code.Stloc_S, Code.Ldarg_0, Code.Ldloc_S, Code.Call, Code.Ret
 			);
-		}
-	}
+        }
+
+        [Detect(Code.Endfilter)]
+        public static Boolean Is_Endfilter(this VirtualOpCode ins)
+        {
+            return ins.DelegateMethod.Matches(Code.Newobj, Code.Callvirt, Code.Ldarg_0, Code.Ldc_I4_0, Code.Stfld, Code.Ldarg_0, Code.Call, Code.Ret) && 
+				ins.DelegateMethod.Calls().Count() == 7 &&
+				ins.DelegateMethod.Calls().ToList()[6].ResolveMethodDef().Matches(Code.Ldfld, Code.Callvirt, Code.Ldarg_0, Code.Ldloca_S, Code.Call, Code.Call, Code.Ret);
+        }
+    }
 }

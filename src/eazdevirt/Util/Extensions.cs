@@ -98,12 +98,12 @@ namespace eazdevirt.Util
 			}) != null;
 		}
 
-		/// <summary>
-		/// Search for and return all called methods.
-		/// </summary>
-		/// <param name="method">Method to search</param>
-		/// <returns>Called methods</returns>
-		public static IEnumerable<IMethod> Calls(this MethodDef method)
+        /// <summary>
+        /// Search for and return all called methods.
+        /// </summary>
+        /// <param name="method">Method to search</param>
+        /// <returns>Called methods</returns>
+        public static IEnumerable<IMethod> Calls(this MethodDef method)
 		{
 			if (method == null)
 				throw new ArgumentNullException();

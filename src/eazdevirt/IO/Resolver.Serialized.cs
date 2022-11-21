@@ -29,9 +29,9 @@ namespace eazdevirt.IO
 		public enum InlineOperandType
 		{
 			Type = 2,
-			Field = 1,
+			Field = 3,
 			Method = 0,
-			UserString = 3,
+			UserString = 1,
 			UnknownType7 = 4
 		}
 
@@ -176,11 +176,11 @@ namespace eazdevirt.IO
 					case InlineOperandType.Method:
 						return new MethodData(reader);
 					case InlineOperandType.UserString:
-						return new StringData(reader);
+                        return new StringData(reader);
 					case InlineOperandType.UnknownType7:
-						return new UnknownType7(reader);
+                        return new UnknownType7(reader);
 					default:
-						throw new ArgumentOutOfRangeException();
+                        throw new ArgumentOutOfRangeException();
 				}
 			}
 		}
