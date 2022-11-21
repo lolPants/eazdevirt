@@ -135,15 +135,15 @@ namespace eazdevirt.Detection.V1.Ext
 			});
 		}
 
-		/// <summary>
-		/// OpCode pattern seen in Stelem, Stelem_* helper methods.
-		/// </summary>
-		private static readonly Code[] Pattern_Stelem = new Code[] {
-			Code.Castclass, Code.Stloc_3, Code.Ldarg_0, Code.Ldarg_1, Code.Ldloc_1,
-			Code.Ldloc_2, Code.Ldloc_3, Code.Call, Code.Ret
+        /// <summary>
+        /// OpCode pattern seen in Stelem, Stelem_* helper methods.
+        /// </summary>
+        private static readonly Code[] Pattern_Stelem = new Code[] {
+			Code.Castclass, Code.Stloc_2, Code.Ldarg_0, Code.Ldarg_1, Code.Ldloc_0,
+			Code.Ldloc_1, Code.Ldloc_2, Code.Call, Code.Ret
 		};
 
-		[Detect(Code.Stelem)]
+        [Detect(Code.Stelem)]
 		public static Boolean Is_Stelem(this VirtualOpCode ins)
 		{
 			return ins.DelegateMethod.MatchesEntire(

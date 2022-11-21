@@ -87,8 +87,8 @@ namespace eazdevirt.Detection.V1.Ext
 		/// OpCode pattern seen in the Ldarga, Ldarga_S delegate methods.
 		/// </summary>
 		private static readonly Code[] Pattern_Ldarga = new Code[] {
-			Code.Ldloc_1, Code.Ldarg_0, Code.Ldfld, Code.Ldloc_0, Code.Callvirt,
-			Code.Ldelem, Code.Callvirt, Code.Ldloc_1, Code.Call, Code.Ret
+			Code.Dup, Code.Ldarg_0, Code.Ldfld, Code.Ldloc_0, Code.Callvirt,
+			Code.Ldelem, Code.Callvirt, Code.Call, Code.Ret
 		};
 
 		[Detect(Code.Ldarga)]

@@ -82,8 +82,7 @@ namespace eazdevirt.Detection.V1.Ext
 			// The Castclass operand will be UInt16 stacktype for Ldloca,
 			// and Byte stacktype for Ldloca_S
 			Code.Ldarg_1, Code.Castclass, Code.Stloc_0, Code.Ldarg_0, Code.Newobj,
-			Code.Stloc_1, Code.Ldloc_1, Code.Ldloc_0, Code.Callvirt, Code.Callvirt,
-			Code.Ldloc_1, Code.Call, Code.Ret
+			Code.Dup, Code.Ldloc_0, Code.Callvirt, Code.Callvirt, Code.Call, Code.Ret
 		};
 
 		private static Boolean _Is_Ldloca(VirtualOpCode ins, String typeName)

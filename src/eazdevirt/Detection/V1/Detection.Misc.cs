@@ -390,7 +390,7 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Newarr(this VirtualOpCode ins)
 		{
 			var sub = ins.DelegateMethod.Find(
-				Code.Ldloc_S, Code.Ldloc_1, Code.Call, Code.Stloc_S
+				Code.Throw, Code.Ldloc_1, Code.Call, Code.Stloc_S
 			);
 			return sub != null
 				&& ((IMethod)sub[2].Operand).FullName.Contains("System.Array::CreateInstance");
