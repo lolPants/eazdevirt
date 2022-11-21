@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>eazdevirt</RootNamespace>
     <AssemblyName>eazdevirt</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Core\AttributeInjector.cs" />
     <Compile Include="Core\CryptoStreamBase.cs" />
+    <Compile Include="Core\EazBinaryReader.cs" />
     <Compile Include="Core\SerializationVersion.cs" />
     <Compile Include="Core\SpecialCode.cs" />
     <Compile Include="Core\IPositionTranslator.cs" />
@@ -117,7 +118,6 @@
       <Name>dnlib</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

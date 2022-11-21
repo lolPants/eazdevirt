@@ -173,7 +173,8 @@ namespace eazdevirt.Util
 	    public static Int32 ReadInt32Special(this BinaryReader reader)
         {
             byte[] b = reader.ReadBytes(4);
-            return b[3] << 24 | b[2] | b[1] << 8 | b[0] << 16;
+            //	return (int)this.\u0003[0] << 24 | (int)this.\u0003[1] << 16 | (int)this.\u0003[2] | (int)this.\u0003[3] << 8;
+            return b[0] << 24 | b[1] << 16 | b[2] | b[3] << 8;
         }
 	}
 }

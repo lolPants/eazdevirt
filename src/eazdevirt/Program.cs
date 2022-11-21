@@ -4,8 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using de4dot.blocks;
-using de4dot.blocks.cflow;
 using dnlib.DotNet;
 using Mono.Options;
 using eazdevirt.IO;
@@ -54,9 +52,10 @@ namespace eazdevirt
 		/// <returns>MonoOptions</returns>
 		static MonoOptions Parse(String[] args)
 		{
-			MonoOptions options = new MonoOptions();
+            MonoOptions options = new MonoOptions();
 			OptionSet optionSet = new OptionSet()
 			{
+
 				// Program action options
 				{ "d|devirtualize", "attempt to devirtualize methods in a protected assembly",
 					v => options.Action = ProgramAction.Devirtualize },
@@ -126,9 +125,6 @@ namespace eazdevirt
 		{
 			var options = Parse(args);
 
-			if (!options.NoLogo)
-				WriteAsciiLogo();
-
 			if (options.Help || options.Action == ProgramAction.None)
 			{
 				PrintHelp(options);
@@ -160,6 +156,7 @@ namespace eazdevirt
 					break;
 			}
 
+			Console.ReadKey();
 			return 0;
 		}
 
@@ -197,7 +194,7 @@ namespace eazdevirt
 			        foreach (MethodDef method in typeDef.Methods)
 			        {
                         if(!method.HasBody || !method.Body.HasInstructions) continue;
-                        BlockDeobfuscator(method);
+                      //  BlockDeobfuscator(method);
 			        }
 			    }
 
@@ -214,25 +211,6 @@ namespace eazdevirt
 			return true;
 		}
 
-	    public static void BlockDeobfuscator(MethodDef methodDef)
-	    {
-	        var cfDeob = new BlocksCflowDeobfuscator();
-	        var blocks = new Blocks(methodDef);
-	        blocks.RemoveDeadBlocks();
-	        blocks.RepartitionBlocks();
-	        blocks.UpdateBlocks();
-	        blocks.Method.Body.SimplifyBranches();
-	        blocks.Method.Body.OptimizeBranches();
-	        cfDeob.Initialize(blocks);
-	        cfDeob.Deobfuscate();
-	        blocks.RepartitionBlocks();
-	        blocks.RemoveDeadBlocks();
-	        blocks.OptimizeLocals();
-	        blocks.Method.Body.SimplifyBranches();
-	        blocks.Method.Body.OptimizeBranches();
-	        blocks.GetCode(out var instructions, out var exceptionHandlers);
-	        DotNetUtils.RestoreBody(methodDef, instructions, exceptionHandlers);
-	    }
         static void WritePartiallyDevirtualizedMethod(VirtualizedMethodBodyReader reader)
 		{
 			if (!reader.HasInstructions)

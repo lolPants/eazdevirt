@@ -311,6 +311,9 @@ namespace eazdevirt.IO
 
 		protected Instruction ReadOneInstruction_CIL(VirtualOpCode virtualInstruction)
 		{
+			if (virtualInstruction.Name == "Call") {
+				int i = 0;
+			}
 			OpCode opcode = virtualInstruction.OpCode.ToOpCode();
 
 			Instruction instruction = new Instruction(opcode);
@@ -711,23 +714,27 @@ namespace eazdevirt.IO
 
 			private void Deserialize(BinaryReader reader)
 			{
-			    Int32 count = (Int32)reader.ReadInt16();
-			    this.Locals = new SerializedLocal[count];
-			    for (Int32 i = 0; i < count; i++)
-			        this.Locals[i] = new SerializedLocal(reader);
+				var count = (Int32)reader.ReadInt16();
 
-			    this.ReturnTypeCode = reader.ReadInt32();
-                this.Unknown1 = reader.ReadBoolean();
-			    this.Unknown3 = reader.ReadInt32();
+				this.Locals = new SerializedLocal[count];
+				for (Int32 i = 0; i < count; i++) {
+					this.Locals[i] = new SerializedLocal(reader);
+				}
 
-			    count = (Int32)reader.ReadInt16();
-			    this.Parameters = new SerializedParameter[count];
-			    for (Int32 i = 0; i < count; i++)
-			        this.Parameters[i] = new SerializedParameter(reader);
+				var unknownint8 = reader.ReadSByte();
+				this.Name = reader.ReadString();
 
-			    this.Name = reader.ReadString();
+				var declFlags = reader.ReadInt32(); // Maybe?
+
+				var parameterCount = reader.ReadInt16(); // 8
+
+				this.Parameters = new SerializedParameter[parameterCount];
+				for (Int32 i = 0; i < parameterCount; i++) {
+					this.Parameters[i] = new SerializedParameter(reader);
+				}
+				this.ReturnTypeCode = reader.ReadInt32();
 			}
-		}
+        }
 
 		/// <remarks>Unsure</remarks>
 		public class SerializedParameter

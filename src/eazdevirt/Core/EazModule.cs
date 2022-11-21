@@ -99,7 +99,7 @@ namespace eazdevirt
 		public void Write(String filepath, Boolean noThrow = false)
 		{
 			var options = new ModuleWriterOptions(this.Module);
-			options.MetadataOptions.Flags |= MetadataFlags.PreserveAll;
+			options.MetaDataOptions.Flags |= MetaDataFlags.PreserveAll;
 
 			if (noThrow)
 				options.Logger = DummyLogger.NoThrowInstance;
@@ -127,19 +127,24 @@ namespace eazdevirt
 				{
 					this.ResourceStringId = vmethod.ResourceStringId;
 					this.ResourceCryptoKey = vmethod.ResourceCryptoKey;
-				}
+                    Console.WriteLine("Found ResourceStringId at: " + vmethod.ResourceStringId);
+                    Console.WriteLine("Found ResourceCryptoKey at: " + vmethod.ResourceCryptoKey);
+                }
 				else
 					throw new Exception("Unable to find any virtualized methods");
 			}
 
-			var resource = this.Module.Resources.FindEmbeddedResource(this.ResourceStringId);
+            var resource = this.Module.Resources.FindEmbeddedResource(this.ResourceStringId);
 			if (resource == null)
 				throw new Exception("Unable to find resource");
 
-			if (!rawStream)
-				return streamType.CreateStream(resource.GetReader().AsStream(), this.ResourceCryptoKey);
-			else
-				return resource.GetReader().AsStream();
+			if (!rawStream) 
+			{
+				Stream stream = new MemoryStream(resource.GetResourceData());
+                return streamType.CreateStream(stream, this.ResourceCryptoKey);
+            } else {
+                return resource.GetResourceStream();
+            }
 		}
 
 		/// <summary>

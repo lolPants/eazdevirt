@@ -15,12 +15,12 @@ namespace eazdevirt.IO
 			/// <summary>
 			/// The Value field holds a raw MDToken value.
 			/// </summary>
-			Token = 1,
+			Token = 0,
 
 			/// <summary>
 			/// The Value field holds a position.
 			/// </summary>
-			Position = 0
+			Position = 1
 		}
 
 		/// <summary>
@@ -28,9 +28,9 @@ namespace eazdevirt.IO
 		/// </summary>
 		public enum InlineOperandType
 		{
-			Type = 0,
+			Type = 2,
 			Field = 1,
-			Method = 2,
+			Method = 0,
 			UserString = 3,
 			UnknownType7 = 4
 		}
@@ -129,7 +129,7 @@ namespace eazdevirt.IO
 
 			public static InlineOperand[] ReadArrayInternal(BinaryReader reader)
 			{
-				Int32 count = reader.ReadInt16();
+				Int32 count = reader.ReadByte();
 				InlineOperand[] arr = new InlineOperand[count];
 
 				for (Int32 i = 0; i < arr.Length; i++)
@@ -166,7 +166,8 @@ namespace eazdevirt.IO
 			/// <returns>InlineOperandData</returns>
 			public static InlineOperandData Read(BinaryReader reader)
 			{
-				switch ((InlineOperandType)reader.ReadByte())
+				var operandType = reader.ReadByte();
+				switch ((InlineOperandType)operandType)
 				{
 					case InlineOperandType.Type:
 						return new TypeData(reader);
@@ -260,9 +261,6 @@ namespace eazdevirt.IO
 
 			protected override void Deserialize(BinaryReader reader)
 			{
-				this.SomeIndex = reader.ReadInt32();
-				this.SomeIndex2 = reader.ReadInt32();
-				this.Unknown3 = reader.ReadBoolean();
 				this.Name = reader.ReadString();
 				this.HasGenericTypes = reader.ReadBoolean();
 				this.GenericTypes = InlineOperand.ReadArrayInternal(reader);

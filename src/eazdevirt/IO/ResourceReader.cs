@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using dnlib.DotNet;
+using eazdevirt.Core;
 
 namespace eazdevirt.IO
 {
@@ -38,7 +39,7 @@ namespace eazdevirt.IO
 		private void Initialize()
 		{
 			this.Stream = (CryptoStreamBase)this.Parent.GetResourceStream();
-			this.Reader = new BinaryReader(this.Stream);
+			this.Reader = new EazBinaryReader(this.Stream);
 		}
 	}
 }
