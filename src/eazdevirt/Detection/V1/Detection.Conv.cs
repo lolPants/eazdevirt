@@ -14,8 +14,8 @@ namespace eazdevirt.Detection.V1.Ext
 		/// Also seen in Conv_*_Un delegate methods.
 		/// </summary>
 		private static readonly Code[] Pattern_Conv_Helper_Tail = new Code[] {
-			Code.Ldarg_0, Code.Newobj, Code.Stloc_3, Code.Ldloc_3, Code.Ldloc_2,
-			Code.Callvirt, Code.Ldloc_3, Code.Call, Code.Ret
+			Code.Br_S, Code.Newobj, Code.Throw, Code.Ldarg_0, Code.Newobj, Code.Dup, Code.Ldloc_2,
+			Code.Callvirt, Code.Call, Code.Ret
 		};
 
 		private static Code[] Conv_Helper_Pattern(params Code[] opcodes)
@@ -136,12 +136,13 @@ namespace eazdevirt.Detection.V1.Ext
 		/// <summary>
 		/// OpCode pattern seen in Conv_Ovf_U helper method and Conv_Ovf_U_Un delegate method.
 		/// </summary>
-		private static readonly Code[] Pattern_Conv_Ovf_U = Conv_Helper_Pattern(Code.Conv_U8, Code.Call);
+		private static readonly Code[] Pattern_Conv_Ovf_U = Conv_Helper_Pattern(Code.Conv_U8, Code.Call, Code.Br_S, Code.Ldarg_1, Code.Brfalse_S, Code.Ldloca_S, Code.Ldloc_0, Code.Castclass, Code.Callvirt, Code.Call, Code.Call, Code.Br_S, Code.Ldloca_S, Code.Ldloc_0, Code.Castclass, Code.Callvirt, Code.Call, Code.Call);
+        
 
-		[Detect(Code.Conv_U)]
+        [Detect(Code.Conv_U)]
 		public static Boolean Is_Conv_U(this VirtualOpCode ins)
-		{
-			return _Is_Conv_I(ins, false, Pattern_Conv_Ovf_U);
+        {
+            return _Is_Conv_I(ins, false, Pattern_Conv_Ovf_U);
 		}
 
 		[Detect(Code.Conv_Ovf_U)]
@@ -153,7 +154,7 @@ namespace eazdevirt.Detection.V1.Ext
 		[Detect(Code.Conv_Ovf_U_Un)]
 		public static Boolean Is_Conv_Ovf_U_Un(this VirtualOpCode ins)
 		{
-			return ins.DelegateMethod.Matches(Pattern_Conv_Ovf_U);
+			return ins.DelegateMethod.Matches(Conv_Helper_Pattern(Code.Conv_U8, Code.Call));
 		}
 
 		[Detect(Code.Conv_U1)]
@@ -234,26 +235,14 @@ namespace eazdevirt.Detection.V1.Ext
 			return ins.DelegateMethod.Matches(Conv_Helper_Pattern(Code.Conv_R_Un, Code.Conv_R8, Code.Stloc_2));
 		}
 
-		/// <summary>
-		/// OpCode pattern seen at the end of Conv_R4 delegate method.
-		/// </summary>
-		private static readonly Code[] Pattern_Conv_R4_Helper_Tail = new Code[] {
-			Code.Ldarg_0, Code.Newobj, Code.Stloc_3, Code.Ldloc_3, Code.Ldloc_2,
-			Code.Conv_R8, Code.Callvirt, Code.Ldloc_3, Code.Call, Code.Ret
-		};
-
-		private static Code[] Conv_R4_Helper_Pattern(params Code[] opcodes)
-		{
-			var list = new List<Code>(opcodes);
-			list.AddRange(Pattern_Conv_R4_Helper_Tail);
-			return list.ToArray();
-		}
-
 		[Detect(Code.Conv_R4)]
 		public static Boolean Is_Conv_R4(this VirtualOpCode ins)
-		{
-			return ins.DelegateMethod.Matches(Conv_R4_Helper_Pattern(Code.Conv_R4, Code.Stloc_2));
-		}
+        {
+            return ins.DelegateMethod.Matches(new Code[] {
+				Code.Conv_R4, Code.Stloc_2, Code.Br_S, Code.Ldloc_0, Code.Castclass,
+				Code.Callvirt, Code.Conv_R4
+			});
+        }
 
 		[Detect(Code.Conv_R8)]
 		public static Boolean Is_Conv_R8(this VirtualOpCode ins)
