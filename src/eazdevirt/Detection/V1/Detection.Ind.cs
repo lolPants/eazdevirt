@@ -37,7 +37,7 @@ namespace eazdevirt.Detection.V1.Ext
 			return ins.DelegateMethod.MatchesEntire(
 				Code.Ldarg_0, Code.Ldtoken, Code.Call, Code.Call, Code.Ret
 			) && ins.DelegateMethod.MatchesIndirect(
-				Code.Ldarg_0, Code.Call, Code.Stloc_0, Code.Ldarg_0, Code.Ldarg_0, Code.Ldloc_0,
+				Code.Ldarg_0, Code.Call, Code.Castclass, Code.Stloc_0, Code.Ldarg_0, Code.Ldarg_0, Code.Ldloc_0,
 				Code.Call, Code.Callvirt, Code.Ldarg_1, Code.Call, Code.Call, Code.Ret
 			) && (tokenType = ins.DelegateMethod.Body.Instructions[1].Operand as TypeRef) != null
 			&& tokenType.FullName.Equals(tokenTypeName);
@@ -111,17 +111,17 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			return ins.DelegateMethod.MatchesEntire(Code.Ldarg_0, Code.Call, Code.Ret)
 				&& ins.DelegateMethod.MatchesIndirect(
-				Code.Ldarg_0, Code.Call, Code.Stloc_0, Code.Ldarg_0, Code.Call,
-				Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Ldloc_0, Code.Call,
+				Code.Ldarg_0, Code.Call, Code.Stloc_0, Code.Ldarg_0, Code.Call, Code.Castclass,
+                Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Ldloc_0, Code.Call,
 				Code.Ret
 			);
 		}
 
-		[Detect(Code.Stind_I, ExpectsMultiple = true)]
+		[Detect(Code.Stind_I, ExpectsMultiple=true)]
 		public static Boolean Is_Stind(VirtualOpCode ins)
 		{
 			// Consider all Stind_* instructions as Stind_I (for now?)
 			return _Is_Stind(ins);
 		}
-	}
+    }
 }

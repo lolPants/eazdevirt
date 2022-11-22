@@ -13,7 +13,7 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			return ins.DelegateMethod.MatchesEntire(
 				Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_0, Code.Ldarg_0,
-				Code.Ldarg_0, Code.Ldloc_0, Code.Call, Code.Stfld, Code.Ret
+				Code.Ldarg_0, Code.Ldloc_0, Code.Ldc_I4_1, Code.Call, Code.Stfld, Code.Ret
 			);
 		}
 	}

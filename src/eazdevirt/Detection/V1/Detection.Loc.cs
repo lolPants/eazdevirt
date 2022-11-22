@@ -25,7 +25,7 @@ namespace eazdevirt.Detection.V1.Ext
 		[Detect(Code.Ldloc_0)]
 		public static Boolean Is_Ldloc_0(this VirtualOpCode ins)
 		{
-			return Is_Ldloc_C(ins, Code.Ldc_I4_2);
+			return Is_Ldloc_C(ins, Code.Ldc_I4_0);
 		}
 
 		[Detect(Code.Ldloc_1)]
@@ -37,7 +37,7 @@ namespace eazdevirt.Detection.V1.Ext
 		[Detect(Code.Ldloc_2)]
 		public static Boolean Is_Ldloc_2(this VirtualOpCode ins)
 		{
-			return Is_Ldloc_C(ins, Code.Ldc_I4_0);
+			return Is_Ldloc_C(ins, Code.Ldc_I4_2);
 		}
 
 		[Detect(Code.Ldloc_3)]
@@ -132,7 +132,7 @@ namespace eazdevirt.Detection.V1.Ext
 		[Detect(Code.Stloc_0)]
 		public static Boolean Is_Stloc_0(this VirtualOpCode ins)
 		{
-			return Is_Stloc_C(ins, Code.Ldc_I4_2);
+			return Is_Stloc_C(ins, Code.Ldc_I4_0);
 		}
 
 		[Detect(Code.Stloc_1)]
@@ -144,7 +144,7 @@ namespace eazdevirt.Detection.V1.Ext
 		[Detect(Code.Stloc_2)]
 		public static Boolean Is_Stloc_2(this VirtualOpCode ins)
 		{
-			return Is_Stloc_C(ins, Code.Ldc_I4_0);
+			return Is_Stloc_C(ins, Code.Ldc_I4_2);
 		}
 
 		[Detect(Code.Stloc_3)]

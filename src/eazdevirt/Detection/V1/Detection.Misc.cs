@@ -370,8 +370,8 @@ namespace eazdevirt.Detection.V1.Ext
 			// Could also check: System.Reflection.FieldInfo::get_Type/Field/MethodHandle(),
 			// there are 1 of each of these calls
 			return ins.DelegateMethod.Matches(
-				Code.Ldarg_0, Code.Newobj, Code.Stloc_3, Code.Ldloc_3, Code.Ldloc_1,
-				Code.Callvirt, Code.Ldloc_3, Code.Call, Code.Ret
+				Code.Box, Code.Stloc_2, Code.Br_S, Code.Newobj, Code.Throw, Code.Ldarg_0, Code.Newobj, Code.Dup, Code.Ldloc_2,
+				Code.Callvirt, Code.Call, Code.Ret
 			);
 		}
 
