@@ -318,7 +318,7 @@ namespace eazdevirt.IO
 
 		protected Instruction ReadOneInstruction_CIL(VirtualOpCode virtualInstruction)
 		{
-			if (virtualInstruction.Name == "Call") {
+			if (virtualInstruction.Name == "Blt_S") {
 				int i = 0;
 			}
 			OpCode opcode = virtualInstruction.OpCode.ToOpCode();
@@ -406,12 +406,17 @@ namespace eazdevirt.IO
 				throw new Exception(String.Format("Unknown virtual opcode: {0} (0x{0:X8})", virtualOpcode));
 #else
 
-                throw new OriginalOpcodeUnknownException(virtualInstruction);
+                    throw new OriginalOpcodeUnknownException(virtualInstruction);
 #endif
 			}
 			else
 			{
-				Console.WriteLine("Found opcode {0}", virtualInstruction.OpCode);
+
+                if (virtualInstruction.HasCILOpCode)
+                    Console.WriteLine("Found opcode {0}", virtualInstruction.OpCode);
+				else
+					Console.WriteLine("Found special");
+
 			}
 
 			this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
@@ -622,9 +627,10 @@ namespace eazdevirt.IO
 		/// <remarks>Copied from MethodBodyReaderBase</remarks>
 		protected virtual UInt32 ReadShortInlineBrTarget(Instruction instr)
 		{
-			//return instr.Offset + (UInt32)instr.GetSize() + (UInt32)this.Reader.ReadSByte();
-			return (UInt32)this.Reader.ReadSByte();
-		}
+            //return instr.Offset + (UInt32)instr.GetSize() + (UInt32)this.Reader.ReadSByte();
+            //return (UInt32)this.Reader.ReadSByte();
+            return (UInt32)this.Reader.ReadUInt32();
+        }
 
 		protected virtual UInt32[] ReadInlineSwitch(Instruction instr)
 		{

@@ -175,10 +175,10 @@ namespace eazdevirt.IO
 						return new FieldData(reader);
 					case InlineOperandType.Method:
 						return new MethodData(reader);
-					case InlineOperandType.UserString:
-                        return new StringData(reader);
-					case InlineOperandType.UnknownType7:
+                    case InlineOperandType.UnknownType7:
                         return new UnknownType7(reader);
+                    case InlineOperandType.UserString:
+                        //return new StringData(reader);
 					default:
                         throw new ArgumentOutOfRangeException();
 				}
@@ -195,7 +195,7 @@ namespace eazdevirt.IO
 			public Int32 SomeIndex2 { get; private set; } // int_0, index into type_5? (DeclaringType.GetGenericArguments())
 			public Boolean Unknown3 { get; private set; } // bool_0
 			public String Name { get; private set; } // string_0
-			public Boolean HasGenericTypes { get; private set; } // bool_1
+			public Boolean HasGenericTypes { get { return this.GenericTypes.Length > 0; }  } // bool_1
 			public InlineOperand[] GenericTypes { get; private set; } // class54_0
 
 			public override InlineOperandType Type
@@ -262,7 +262,8 @@ namespace eazdevirt.IO
 			protected override void Deserialize(BinaryReader reader)
 			{
 				this.Name = reader.ReadString();
-				this.HasGenericTypes = reader.ReadBoolean();
+				var what = reader.ReadInt16();
+				var the_fuck = reader.ReadInt64();
 				this.GenericTypes = InlineOperand.ReadArrayInternal(reader);
 			}
 		}
@@ -442,7 +443,17 @@ namespace eazdevirt.IO
 
 			protected void Deserialize(BinaryReader reader)
 			{
-				this.IsStatic = reader.ReadBoolean();
+				var hmm1 = reader.ReadInt16(); // = 0
+				this.IsStatic = (reader.ReadByte() & 8) != 0; // = 12
+                this.Name = reader.ReadString();
+                this.DeclaringType = reader.ReadInt32();
+
+				this.Parameters = ParameterData.ReadArray(reader);
+                this.ReturnType = reader.ReadInt32();
+				var hmm3 = reader.ReadInt32(); // = 0 maybe declaring type
+
+
+                /*this.IsStatic = reader.ReadBoolean();
 				this.ReturnType = reader.ReadInt32(); // Return type
 				this.DeclaringType = reader.ReadInt32(); // Declaring type
 				this.Name = reader.ReadString();
@@ -451,7 +462,7 @@ namespace eazdevirt.IO
 
 				this.Unknown6 = new Int32[reader.ReadUInt16()];
 				for (Int32 i = 0; i < this.Unknown6.Length; i++)
-					this.Unknown6[i] = reader.ReadInt32();
+					this.Unknown6[i] = reader.ReadInt32();*/
 			}
 		}
 

@@ -164,11 +164,19 @@ namespace eazdevirt.Detection.V1.Ext
 			return ins.Matches(Pattern_Br_True) && ins.MatchesIndirect(Pattern_LessThan);
 		}
 
-		/// <summary>
-		/// OpCode pattern seen in Blt_Un helper method. Probably used in others.
-		/// </summary>
-		/// <remarks>Seen near the end of the method</remarks>
-		private static readonly Code[] Pattern_Blt_Un = new Code[] {
+        [Detect(Code.Blt_S)]
+        public static Boolean Is_Blt_S(this VirtualOpCode ins)
+        {
+			return ins.DelegateMethod.Matches(Code.Brfalse_S, Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Call, Code.Ret)
+				&& ins.DelegateMethod.Calls().Count() == 5
+				&& ins.DelegateMethod.Calls().ToList()[2].ResolveMethodDef().Matches(Code.Clt, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
+        }
+
+        /// <summary>
+        /// OpCode pattern seen in Blt_Un helper method. Probably used in others.
+        /// </summary>
+        /// <remarks>Seen near the end of the method</remarks>
+        private static readonly Code[] Pattern_Blt_Un = new Code[] {
 			Code.Ldloc_S, Code.Ldloc_S, Code.Blt_S, Code.Ldloc_S, Code.Call, Code.Brtrue_S,
 			Code.Ldloc_S, Code.Call, Code.Br_S
 		};
