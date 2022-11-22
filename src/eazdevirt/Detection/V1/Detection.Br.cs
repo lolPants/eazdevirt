@@ -212,7 +212,15 @@ namespace eazdevirt.Detection.V1.Ext
 			}) && ins.MatchesIndirect(Pattern_Ble_Un);
 		}
 
-		[Detect(Code.Ble_Un)]
+        [Detect(Code.Ble_S)]
+        public static Boolean Is_Ble_S(this VirtualOpCode ins)
+        {
+            return ins.DelegateMethod.Matches(Code.Brfalse_S, Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_3, Code.Ldarg_0, Code.Ldloc_3, Code.Call, Code.Ret)
+                && ins.DelegateMethod.Calls().Count() == 7
+                && ins.DelegateMethod.Calls().ToList()[3].ResolveMethodDef().Matches(Code.Ceq, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
+        }
+
+        [Detect(Code.Ble_Un)]
 		public static Boolean Is_Ble_Un(this VirtualOpCode ins)
 		{
 			var sub = ins.DelegateMethod.Find(Pattern_Ble);

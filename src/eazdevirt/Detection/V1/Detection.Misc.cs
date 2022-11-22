@@ -13,9 +13,10 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Box(this VirtualOpCode ins)
 		{
 			return ins.Matches(new Code[] {
-				Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_2, Code.Ldarg_0,
-				Code.Ldloc_2, Code.Call, Code.Stloc_0, Code.Ldarg_0, Code.Call
-			});
+				Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_0, Code.Ldarg_0, Code.Ldloc_0,
+				Code.Ldc_I4_1, Code.Call, Code.Stloc_1, Code.Ldarg_0, Code.Call, Code.Callvirt, Code.Ldloc_1, Code.Call
+			}) && ins.DelegateMethod.Calls().Count() == 7
+			&& ins.DelegateMethod.Calls().ToArray()[1].ResolveMethodDef().Matches(Code.Call, Code.Endfinally, Code.Ldarg_2);
 		}
 
 		[Detect(Code.Call)]
@@ -45,11 +46,11 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Castclass(this VirtualOpCode ins)
 		{
 			var sub = ins.DelegateMethod.Find(
-				Code.Call, Code.Brtrue_S, Code.Newobj, Code.Throw, Code.Ldarg_0, Code.Ldloc_2,
-				Code.Call, Code.Ret
+				Code.Ldloc_2, Code.Ldloc_1, Code.Call, Code.Brfalse_S, Code.Ldarg_0, Code.Ldloc_2,
+				Code.Call, Code.Ret, Code.Newobj
 			);
 			return sub != null
-				&& ((IMethod)sub[2].Operand).DeclaringType.FullName.Contains("System.InvalidCastException");
+				&& ((IMethod)sub[8].Operand).DeclaringType.FullName.Contains("System.InvalidCastException");
 		}
 
 		private static Boolean _Is_Ceq_50(VirtualOpCode ins)
@@ -265,13 +266,13 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			MethodDef method;
 			var sub = ins.DelegateMethod.Find(new Code[] {
-				Code.Ldloc_1, Code.Ldloc_S, Code.Callvirt, Code.Ldloc_1, Code.Ldloc_2,
-				Code.Callvirt, Code.Ldloc_1, Code.Call, Code.Ret
+				Code.Call, Code.Stloc_S, Code.Ldarg_0, Code.Call, Code.Stloc_1, Code.Ldloc_1, Code.Isinst
 			});
 			return sub != null
-				&& (method = (sub[2].Operand as MethodDef)) != null
-				&& method.Parameters.Count == 2
-				&& method.Parameters[1].Type.FullName.Contains("System.Reflection.FieldInfo");
+				&& ins.DelegateMethod.Calls().Any((called) =>
+                {
+                    return called.ResolveMethodDef().ReturnType.FullName.Contains("System.Reflection.FieldInfo");
+                });
 		}
 
 		[Detect(Code.Ldftn)]
@@ -293,9 +294,9 @@ namespace eazdevirt.Detection.V1.Ext
 		{
 			return ins.MatchesEntire(new Code[] {
 				Code.Ldarg_0, Code.Call, Code.Callvirt, Code.Castclass, Code.Stloc_0, Code.Ldarg_0,
-				Code.Newobj, Code.Stloc_1, Code.Ldloc_1, Code.Ldloc_0, Code.Callvirt, Code.Callvirt,
-				Code.Ldloc_1, Code.Call, Code.Ret
-			}) && ((IMethod)ins.DelegateMethod.Body.Instructions[10].Operand)
+				Code.Newobj, Code.Dup, Code.Ldloc_0, Code.Callvirt, Code.Callvirt,
+				Code.Call, Code.Ret
+			}) && ((IMethod)ins.DelegateMethod.Body.Instructions[9].Operand)
 				  .FullName.Contains("System.Array::get_Length");
 		}
 
@@ -465,7 +466,7 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Stsfld(this VirtualOpCode ins)
 		{
 			return ins.Matches(new Code[] {
-				Code.Ldloc_1, Code.Ldnull, Code.Ldloc_3, Code.Callvirt, Code.Callvirt,
+				Code.Ldloc_1, Code.Ldnull, Code.Ldloc_2, Code.Callvirt, Code.Callvirt,
 				Code.Ret
 			}) && ins.DelegateMethod.Calls().Any((called) =>
 			{
@@ -495,8 +496,8 @@ namespace eazdevirt.Detection.V1.Ext
 		public static Boolean Is_Unbox_Any(this VirtualOpCode ins)
 		{
 			return ins.DelegateMethod.Matches(
-				Code.Ldloc_2, Code.Callvirt, Code.Stloc_3, Code.Ldloc_3, Code.Ldloc_1,
-				Code.Call, Code.Stloc_S, Code.Ldarg_0, Code.Ldloc_S, Code.Call, Code.Ret
+				Code.Ldarg_0, Code.Call, Code.Callvirt, Code.Ldloc_1,
+				Code.Call, Code.Stloc_2, Code.Ldarg_0, Code.Ldloc_2, Code.Call, Code.Ret
 			);
         }
 

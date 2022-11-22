@@ -178,6 +178,8 @@ namespace eazdevirt
 			var results = devirtualizer.Devirtualize((attempt) => {
 				if (attempt.Successful)
 					PrintAttempt(options, module, attempt);
+				else
+					Console.WriteLine("Failed to devirtualize {0} (MDToken {1})", attempt.Method.FullName, attempt.Method.MDToken);
 			});
 
 			if (results.Empty)
