@@ -131,7 +131,10 @@ namespace eazdevirt.Util
 			//    at eazdevirt.Devirtualizer.Devirtualize(DevirtualizeOptions options, Action`1 attemptCallback)
 
 			// Try to find AssemblyRef via full name
-			var assemblyRef = _module.GetAssemblyRefs().FirstOrDefault((ar) =>
+
+			var refs = _module.GetAssemblyRefs();
+
+            var assemblyRef = _module.GetAssemblyRefs().FirstOrDefault((ar) =>
 			{
 				return ar.FullName.Equals(fullName);
 			});
@@ -162,24 +165,23 @@ namespace eazdevirt.Util
 			this.FullName = fullName.Replace('+', '/');
 		}
 
-		/// <summary>
-		/// Full assembly name.
-		/// </summary>
-		public String AssemblyFullName
-		{
-			get
-			{
-				return this.FullName.Substring(
-					this.Name.Length + 2,
-					this.FullName.Length - (this.Name.Length + 2)
-				);
-			}
-		}
+        /// <summary>
+        /// Full assembly name.
+        /// </summary>
+        public String AssemblyFullName
+        {
+            get
+            {
+                return this.FullName.Substring(
+                    this.FullName.IndexOf(", ") + 2
+                );
+            }
+        }
 
-		/// <summary>
-		/// Assembly name.
-		/// </summary>
-		public String AssemblyName
+        /// <summary>
+        /// Assembly name.
+        /// </summary>
+        public String AssemblyName
 		{
 			get { return AssemblyFullName.Split(',')[0]; }
 		}

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using static eazdevirt.IO.VirtualizedMethodBodyReader;
 
 namespace eazdevirt.IO
 {
@@ -315,13 +316,13 @@ namespace eazdevirt.IO
 		/// <remarks>Class44</remarks>
 		public class MethodData : InlineOperandData
 		{
-			public InlineOperand DeclaringType { get; private set; } // class54_0
-			public Boolean Unknown2 { get; private set; } // bool_0
-			public Boolean Flags { get; private set; } // bool_1
-			public String Name { get; private set; } // string_0
-			public InlineOperand ReturnType { get; private set; } // class54_3
-			public InlineOperand[] Parameters { get; private set; } // class54_1
-			public InlineOperand[] GenericArguments { get; private set; } // class54_2
+			public InlineOperand DeclaringType { get; private set; }
+			public byte Flags { get; private set; } 
+			public Boolean IsStatic { get; private set; } 
+			public String Name { get; private set; } 
+			public InlineOperand ReturnType { get; private set; } 
+			public InlineOperand[] Parameters { get; private set; } 
+			public InlineOperand[] GenericArguments { get; private set; } 
 
 			public Boolean HasGenericArguments
 			{
@@ -333,14 +334,9 @@ namespace eazdevirt.IO
 				get { return InlineOperandType.Method; }
 			}
 
-			public Boolean IsStatic
-			{
-				get { return this.Flags; }
-			}
-
 			public Boolean IsInstance
 			{
-				get { return !this.Flags; }
+				get { return !this.IsStatic; }
 			}
 
 			public BindingFlags BindingFlags
@@ -348,7 +344,7 @@ namespace eazdevirt.IO
 				get
 				{
 					BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic;
-					if (this.Flags)
+					if (this.IsStatic)
 						bindingFlags |= BindingFlags.Static;
 					else
 						bindingFlags |= BindingFlags.Instance;
@@ -364,8 +360,8 @@ namespace eazdevirt.IO
 			protected override void Deserialize(BinaryReader reader)
 			{
 				this.DeclaringType = InlineOperand.ReadInternal(reader);
-				//this.Unknown2 = reader.ReadBoolean();
-				this.Flags = reader.ReadBoolean();
+				this.Flags = reader.ReadByte();
+				this.IsStatic = (this.Flags & 1) != 0;
 				this.Name = reader.ReadString();
 				this.ReturnType = InlineOperand.ReadInternal(reader);
 				this.Parameters = InlineOperand.ReadArrayInternal(reader);
@@ -425,16 +421,7 @@ namespace eazdevirt.IO
 
 		public class EazCallData
 		{
-			/// <summary>
-			/// Whether or not the respective method is a static method.
-			/// </summary>
-			public Boolean IsStatic { get; private set; }
-
-			public Int32 ReturnType { get; private set; }
-			public Int32 DeclaringType { get; private set; }
-			public String Name { get; private set; }
-			public ParameterData[] Parameters { get; private set; }
-			public Int32[] Unknown6 { get; private set; }
+			public VirtualizedMethodInfo MethodInfo { get; private set; }
 
 			public EazCallData(BinaryReader reader)
 			{
@@ -443,28 +430,9 @@ namespace eazdevirt.IO
 
 			protected void Deserialize(BinaryReader reader)
 			{
-				var hmm1 = reader.ReadInt16(); // = 0
-				this.IsStatic = (reader.ReadByte() & 8) != 0; // = 12
-                this.Name = reader.ReadString();
-                this.DeclaringType = reader.ReadInt32();
-
-				this.Parameters = ParameterData.ReadArray(reader);
-                this.ReturnType = reader.ReadInt32();
-				var hmm3 = reader.ReadInt32(); // = 0 maybe declaring type
-
-
-                /*this.IsStatic = reader.ReadBoolean();
-				this.ReturnType = reader.ReadInt32(); // Return type
-				this.DeclaringType = reader.ReadInt32(); // Declaring type
-				this.Name = reader.ReadString();
-
-				this.Parameters = ParameterData.ReadArray(reader);
-
-				this.Unknown6 = new Int32[reader.ReadUInt16()];
-				for (Int32 i = 0; i < this.Unknown6.Length; i++)
-					this.Unknown6[i] = reader.ReadInt32();*/
-			}
-		}
+				MethodInfo = new VirtualizedMethodInfo(reader);
+            }
+        }
 
 		// Parameter?
 		public class ParameterData

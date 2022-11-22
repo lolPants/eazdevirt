@@ -494,14 +494,14 @@ namespace eazdevirt.IO
 
 			EazCallData data = new EazCallData(this.Reader);
 
-			var delcaringType = (this.ResolveType_NoLock(data.DeclaringType) as TypeDef);
+			var delcaringType = (this.ResolveType_NoLock(data.MethodInfo.DeclaringType) as TypeDef);
 			if (delcaringType == null)
 				throw new Exception("Unable to resolve the declaring type of the Eaz_Call method operand");
 
 			var methodSig = GetMethodSig(data);
 
 			// Todo: Factor in generics?
-			var method = delcaringType.FindMethodCheckBaseType(data.Name, methodSig);
+			var method = delcaringType.FindMethodCheckBaseType(data.MethodInfo.Name, methodSig);
 			if (method == null)
 				throw new Exception("Unable to resolve Eaz_Call operand from declaring type + method name");
 
@@ -637,14 +637,14 @@ namespace eazdevirt.IO
 		/// <returns>Signature</returns>
 		MethodSig GetMethodSig(EazCallData data)
 		{
-			var returnType = this.ResolveType_NoLock(data.ReturnType).ToTypeSig(true);
-			var paramTypes = data.Parameters.Select((p) => {
-				return this.ResolveType_NoLock(p.Type).ToTypeSig(true);
+			var returnType = this.ResolveType_NoLock(data.MethodInfo.ReturnTypeCode).ToTypeSig(true);
+			var paramTypes = data.MethodInfo.Parameters.Select((p) => {
+				return this.ResolveType_NoLock(p.TypeCode).ToTypeSig(true);
 			}).ToArray();
 
 			// Unsure about how EazCallData stores/handles generics
 
-			if (data.IsStatic)
+			if (data.MethodInfo.IsStatic)
 				return MethodSig.CreateStatic(returnType, paramTypes);
 			else
 			{
