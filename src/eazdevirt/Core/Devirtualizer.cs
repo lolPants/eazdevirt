@@ -105,7 +105,7 @@ namespace eazdevirt
 				var reader = new VirtualizedMethodBodyReader(method, this.Logger, this.Parent.Version);
 				Exception exception = null, fixerException = null;
 
-				Console.WriteLine("Starting to devirtualize {0} (MDToken {1})", method.Method.FullName, method.Method.MDToken);
+				//Console.WriteLine("Starting to devirtualize {0}", method.Method.FullName);
 
 				try
 				{

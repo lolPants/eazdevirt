@@ -173,6 +173,23 @@ namespace eazdevirt.IO
 
 			// VirtualHandlerEnd does the same as VirtualTryEnd
 			handler.HandlerEnd = GetInstruction(this.GetRealOffset(deserialized.VirtualHandlerEnd));
+			var possibleEnd = handler.HandlerEnd;
+			while(possibleEnd != null)
+			{
+				bool done = false;
+				switch(possibleEnd.OpCode.Code)
+				{
+					case Code.Leave:
+					case Code.Leave_S:
+					case Code.Endfinally:
+					case Code.Ret:
+						handler.HandlerEnd = possibleEnd;
+						done = true;
+						break;
+				}
+				if (done) break;
+				possibleEnd = GetInstructionAfter(possibleEnd);
+			}
 			if (GetInstructionAfter(handler.HandlerEnd) != null)
 				handler.HandlerEnd = GetInstructionAfter(handler.HandlerEnd);
 
@@ -415,11 +432,11 @@ namespace eazdevirt.IO
 #if DEBUG
                 if (virtualInstruction.HasCILOpCode)
                 {
-                    Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
+                    //Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
                 }
                 else
                 {
-                    Console.WriteLine("Found special");
+                    //Console.WriteLine("Found special");
                 }
 #endif
                 index++;
