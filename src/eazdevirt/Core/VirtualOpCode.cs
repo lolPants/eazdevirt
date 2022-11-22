@@ -310,10 +310,14 @@ namespace eazdevirt
 
 			if (this.HasCILOpCode)
 			{
-				// Instruction instruction = this.OpCode.ToOpCode().ToInstruction();
-				Instruction instruction = new Instruction(this.OpCode.ToOpCode(), operand);
-				return (instruction.GetSize() - instruction.OpCode.Size) + 4;
-			}
+                // Instruction instruction = this.OpCode.ToOpCode().ToInstruction();
+                Instruction instruction = new Instruction(this.OpCode.ToOpCode(), operand);
+                var size = instruction.GetSize();
+                if (instruction.OpCode.OperandType == OperandType.ShortInlineBrTarget)
+                    size = instruction.OpCode.Size + 4;
+
+                return (size - instruction.OpCode.Size) + 4;
+            }
 			else
 			{
 				switch(this.SpecialOpCode)

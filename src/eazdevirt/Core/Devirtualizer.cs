@@ -98,17 +98,21 @@ namespace eazdevirt
 
 			var attempts = new List<DevirtualizeAttempt>();
 
+
+
 			foreach (var method in methods)
 			{
 				var reader = new VirtualizedMethodBodyReader(method, this.Logger, this.Parent.Version);
 				Exception exception = null, fixerException = null;
+
+				Console.WriteLine("Starting to devirtualize {0} (MDToken {1})", method.Method.FullName, method.Method.MDToken);
 
 				try
 				{
 					reader.Read(); // Read method
 				}
 				catch (Exception e)
-				{
+				{ 
 					exception = e;
 				}
 
@@ -125,6 +129,29 @@ namespace eazdevirt
 
 					method.Method.FreeMethodBody();
 					method.Method.Body = body;
+
+
+					// short form jumps seem to be too far sometimes, simply force them to normal jumps
+					for (int i = 0; i < body.Instructions.Count; i++)
+					{
+						var inst = body.Instructions[i];
+						if (inst.OpCode.Code == Code.Beq_S)
+						{
+							inst.OpCode = OpCodes.Beq;
+                        }
+                        else if (inst.OpCode.Code == Code.Bne_Un_S)
+                        {
+                            inst.OpCode = OpCodes.Bne_Un;
+						}
+						else if (inst.OpCode.Code == Code.Ble_S)
+						{
+							inst.OpCode = OpCodes.Ble;
+                        }
+                        else if (inst.OpCode.Code == Code.Blt_S)
+                        {
+                            inst.OpCode = OpCodes.Blt;
+                        }
+					}
 
 					// Perform fixes
 					try

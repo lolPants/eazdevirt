@@ -384,19 +384,20 @@ namespace eazdevirt.IO
 			return instruction;
 		}
 
-		/// <summary>
-		/// Read a virtual instruction as a CIL instruction.
-		/// </summary>
-		/// <returns>CIL instruction</returns>
-		protected Instruction ReadOneInstruction()
+        /// <summary>
+        /// Read a virtual instruction as a CIL instruction.
+        /// </summary>
+        /// <returns>CIL instruction</returns>
+
+        int index = 0;
+        protected Instruction ReadOneInstruction()
 		{
-			Int32 virtualOpcode = this.Reader.ReadInt32Special();
+			Int32 virtualOpcode = this.Reader.ReadInt32();
 			this.LastVirtualOpCode = virtualOpcode;
 
             VirtualOpCode virtualInstruction;
 
-
-            if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+			if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
 			{
 #if DEBUG
 				this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction);
@@ -411,13 +412,18 @@ namespace eazdevirt.IO
 			}
 			else
 			{
-
+#if DEBUG
                 if (virtualInstruction.HasCILOpCode)
-                    Console.WriteLine("Found opcode {0}", virtualInstruction.OpCode);
-				else
-					Console.WriteLine("Found special");
-
-			}
+                {
+                    Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
+                }
+                else
+                {
+                    Console.WriteLine("Found special");
+                }
+#endif
+                index++;
+            }
 
 			this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
 
@@ -530,10 +536,10 @@ namespace eazdevirt.IO
 		{
 			foreach(var instr in this.Instructions)
 			{
-				switch(instr.OpCode.OperandType)
+                switch (instr.OpCode.OperandType)
 				{
 					case OperandType.InlineBrTarget:
-					case OperandType.ShortInlineBrTarget:
+                    case OperandType.ShortInlineBrTarget:
 						UInt32 realOffset = this.GetRealOffset((UInt32)instr.Operand);
 						instr.Operand = this.GetInstruction(realOffset);
 						break;
@@ -726,9 +732,10 @@ namespace eazdevirt.IO
 		/// </summary>
 		public class VirtualizedMethodInfo
 		{
-			public Boolean Unknown1 { get; set; }
 			public Int32 ReturnTypeCode { get; set; }
-			public Int32 Unknown3 { get; set; }
+			public Int32 DeclaringType { get; set; }
+			public byte BindingFlags { get; set; }
+			public Boolean IsStatic { get { return (BindingFlags & 8) != 0; } }
 			public String Name { get; set; }
 			public SerializedParameter[] Parameters { get; set; }
 			public SerializedLocal[] Locals { get; set; }
@@ -747,12 +754,11 @@ namespace eazdevirt.IO
 					this.Locals[i] = new SerializedLocal(reader);
 				}
 
-				var unknownint8 = reader.ReadSByte();
+				this.BindingFlags = reader.ReadByte();
 				this.Name = reader.ReadString();
 
-				var declFlags = reader.ReadInt32(); // Maybe?
-
-				var parameterCount = reader.ReadInt16(); // 8
+				this.DeclaringType = reader.ReadInt32();
+				var parameterCount = reader.ReadInt16();
 
 				this.Parameters = new SerializedParameter[parameterCount];
 				for (Int32 i = 0; i < parameterCount; i++) {

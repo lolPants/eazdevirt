@@ -199,7 +199,7 @@ namespace eazdevirt.Util
 				if (this.Name.Contains('.'))
 					return this.Name.Split('.').Last();
 				else
-					return String.Empty;
+					return this.Name;
 			}
 		}
 
@@ -216,7 +216,7 @@ namespace eazdevirt.Util
 						this.Name.Split('.').Reverse().Skip(1).Reverse().ToArray());
 				}
 				else
-					return this.Name;
+					return "";
 			}
 		}
 

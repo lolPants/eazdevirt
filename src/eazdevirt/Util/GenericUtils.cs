@@ -15,7 +15,7 @@ namespace eazdevirt.Util
 			// Ignore [], &, * when comparing against generic types
 			// Otherwise, String[] Blah<String>(...) won't consider that the
 			// return type might be T[].
-			Stack<String> modifiers;
+			Stack<String> modifiers, ignore;
 			TypeSig returnTypeBase = SigUtil.ToBaseSig(returnType, out modifiers);
 			if (returnTypeBase == null)
 				throw new Exception(String.Format("Given TypeSig is not a TypeDefOrRefSig: {0}", returnType));
@@ -29,30 +29,35 @@ namespace eazdevirt.Util
 
 				foreach (var combo in combos)
 					list.Add(new GenericInstSig(genericSig.GenericType, combo));
-
-				return list;
 			}
 			else // Non-generic-instance type
 			{
 				list.Add(returnType);
+            }
 
-				for (UInt16 g = 0; g < typeGenerics.Count; g++)
-				{
-					var gtype = typeGenerics[g];
-					if (returnTypeBase.FullName.Equals(gtype.FullName))
-						list.Add(SigUtil.FromBaseSig(new GenericVar(g), modifiers));
-				}
+            for (UInt16 g = 0; g < typeGenerics.Count; g++)
+            {
+                var gtype = typeGenerics[g];
+                if (returnTypeBase.FullName.Equals(SigUtil.ToBaseSig(gtype, out ignore).FullName))
+                {
+                    var relativeModifiers = new Stack<String>(modifiers);
+                    foreach (var tmp in ignore) relativeModifiers.Pop();
+                    list.Add(SigUtil.FromBaseSig(new GenericVar(g), relativeModifiers));
+                }
+            }
 
-				for (UInt16 g = 0; g < methodGenerics.Count; g++)
-				{
-					var gtype = methodGenerics[g];
-					if (returnTypeBase.FullName.Equals(gtype.FullName))
-						list.Add(SigUtil.FromBaseSig(new GenericMVar(g), modifiers));
-				}
-
-				return list;
-			}
-		}
+            for (UInt16 g = 0; g < methodGenerics.Count; g++)
+            {
+                var gtype = methodGenerics[g];
+                if (returnTypeBase.FullName.Equals(SigUtil.ToBaseSig(gtype, out ignore).FullName))
+                {
+                    var relativeModifiers = new Stack<String>(modifiers);
+                    foreach (var tmp in ignore) relativeModifiers.Pop();
+                    list.Add(SigUtil.FromBaseSig(new GenericMVar(g), relativeModifiers));
+                }
+            }
+            return list;
+        }
 
 		/// <summary>
 		/// Get all combinations of some collections of lists.
@@ -81,7 +86,7 @@ namespace eazdevirt.Util
 			if (list.Any())
 			{
 				var remainingLists = list.Skip(1);
-				foreach (var item in list.First().Where(x => !_selected.Contains(x)))
+				foreach (var item in list.First())
 					foreach (var combo in _AllCombinations<T>(remainingLists, _selected.Concat(new T[] { item })))
 						yield return combo;
 			}
