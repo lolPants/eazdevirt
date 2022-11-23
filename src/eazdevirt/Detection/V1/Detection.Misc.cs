@@ -53,7 +53,18 @@ namespace eazdevirt.Detection.V1.Ext
 				&& ((IMethod)sub[8].Operand).DeclaringType.FullName.Contains("System.InvalidCastException");
 		}
 
-		private static Boolean _Is_Ceq_50(VirtualOpCode ins)
+        [Detect(Code.Castclass)]
+        public static Boolean Is_Castclass_Codeflow(this VirtualOpCode ins)
+        {
+            var sub = ins.DelegateMethod.Find(
+                Code.Call, Code.Brtrue_S, Code.Newobj, Code.Throw, Code.Ldarg_0, Code.Ldloc_2,
+                Code.Call, Code.Ret
+            );
+            return sub != null
+                && ((IMethod)sub[2].Operand).DeclaringType.FullName.Contains("System.InvalidCastException");
+        }
+
+        private static Boolean _Is_Ceq_50(VirtualOpCode ins)
 		{
 			return ins.DelegateMethod.Matches(
 				Code.Ldloc_2, Code.Ldloc_1, Code.Ldloc_0, Code.Call, Code.Brtrue_S,
@@ -375,7 +386,20 @@ namespace eazdevirt.Detection.V1.Ext
 			);
 		}
 
-		[Detect(Code.Ldvirtftn)]
+
+        [Detect(Code.Ldtoken)]
+        public static Boolean Is_Ldtoken_Codeflow(this VirtualOpCode ins)
+        {
+            // Checks delegate method tail
+            // Could also check: System.Reflection.FieldInfo::get_Type/Field/MethodHandle(),
+            // there are 1 of each of these calls
+            return ins.DelegateMethod.Matches(
+                Code.Call, Code.Callvirt, Code.Box, Code.Stloc_2, Code.Ldarg_0, Code.Newobj, Code.Dup, Code.Ldloc_2,
+                Code.Callvirt, Code.Call, Code.Ret
+            );
+        }
+
+        [Detect(Code.Ldvirtftn)]
 		public static Boolean Is_Ldvirtftn(this VirtualOpCode ins)
 		{
 			MethodDef called = null;

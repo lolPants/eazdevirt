@@ -125,9 +125,17 @@ namespace eazdevirt.Detection.V1.Ext
             return ins.DelegateMethod.Matches(Code.Brfalse_S, Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Call, Code.Ret)
                 && ins.DelegateMethod.Calls().Count() == 5
                 && ins.DelegateMethod.Calls().ToList()[2].ResolveMethodDef().Matches(Code.Callvirt, Code.Ldarg_1, Code.Callvirt, Code.Ceq, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
-        }
+		}
 
-        [Detect(Code.Bne_Un)]
+		[Detect(Code.Beq_S)]
+		public static Boolean Is_Beq_S_Codeflow(this VirtualOpCode ins)
+		{
+			return ins.DelegateMethod.Matches(Code.Brfalse_S, Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Call, Code.Ret)
+				&& ins.DelegateMethod.Calls().Count() == 5
+				&& ins.DelegateMethod.Calls().ToList()[2].ResolveMethodDef().Matches(Code.Callvirt, Code.Ldarg_1, Code.Callvirt, Code.Ceq, Code.Stloc_0, Code.Br_S, Code.Ldarg_0, Code.Castclass, Code.Ldarg_1, Code.Castclass, Code.Stloc_S, Code.Ldloc_S, Code.Callvirt, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
+		}
+
+		[Detect(Code.Bne_Un)]
 		public static Boolean Is_Bne_Un(this VirtualOpCode ins)
 		{
 			return ins.Matches(Pattern_Br_False) && _Is_Br_Equality(ins) && _Jumps(ins);
@@ -140,6 +148,14 @@ namespace eazdevirt.Detection.V1.Ext
 				&& ins.DelegateMethod.Calls().Count() == 5
 				&& ins.DelegateMethod.Calls().ToList()[2].ResolveMethodDef().Matches(Code.Callvirt, Code.Ldarg_1, Code.Callvirt, Code.Ceq, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
 		}
+
+        [Detect(Code.Bne_Un_S)]
+        public static Boolean Is_Bne_Un_S_Codeflow(this VirtualOpCode ins)
+        {
+            return ins.DelegateMethod.Matches(Code.Brtrue_S, Code.Ldarg_1, Code.Castclass, Code.Callvirt, Code.Stloc_1, Code.Ldarg_0, Code.Ldloc_1, Code.Call, Code.Ret)
+                && ins.DelegateMethod.Calls().Count() == 5
+                && ins.DelegateMethod.Calls().ToList()[2].ResolveMethodDef().Matches(Code.Callvirt, Code.Ldarg_1, Code.Callvirt, Code.Ceq, Code.Stloc_0, Code.Br_S, Code.Ldarg_0, Code.Castclass, Code.Ldarg_1, Code.Castclass, Code.Stloc_S, Code.Ldloc_S, Code.Callvirt, Code.Stloc_0, Code.Ldloc_0, Code.Ret);
+        }
 
         /// <summary>
         /// OpCode pattern seen in the Blt helper method.

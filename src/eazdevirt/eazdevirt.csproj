@@ -52,6 +52,7 @@
     <Compile Include="Core\Types\CryptoStreamDef.cs" />
     <Compile Include="Core\Types\ITypeDefProvider.cs" />
     <Compile Include="Core\V2\CryptoStreamV2.cs" />
+    <Compile Include="Detection\V1\Detection.Conv.Cflow.cs" />
     <Compile Include="Detection\InstructionDetectorBase.cs" />
     <Compile Include="Detection\IInstructionDetector.cs" />
     <Compile Include="Detection\V1\Detection.Arg.cs" />
