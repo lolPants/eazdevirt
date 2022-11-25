@@ -156,7 +156,6 @@ namespace eazdevirt
 					break;
 			}
 
-			Console.ReadKey();
 			return 0;
 		}
 
