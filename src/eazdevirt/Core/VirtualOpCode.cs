@@ -377,5 +377,16 @@ namespace eazdevirt
 				return false;
 			}
 		}
+
+		/// <summary>
+		/// Force identify this opcode
+		/// </summary>
+		/// <param name="code"></param>
+		public void ForceIdentify(Code code)
+		{
+			if (!this.IsIdentified)
+				this.Parent.IdentifiedOpCodes.Add(this.VirtualCode, this);
+			this.DetectAttribute = new DetectAttribute(code);
+		}
 	}
 }

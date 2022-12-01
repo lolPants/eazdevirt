@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using eazdevirt.Core;
 using eazdevirt.Fixers;
 using eazdevirt.IO;
 
@@ -40,7 +41,13 @@ namespace eazdevirt
 		/// </summary>
 		public IList<Type> Fixers { get; private set; }
 
-		public Devirtualizer(EazModule module)
+		/// <summary>
+		/// A callback to call whenever we encounter an opcode we have not identified yet.
+		/// Primarily used by GenerateOpcodes to generate the opcode detection for the missing opcodes
+		/// </summary>
+        public OpCodeResolver UnknownOpCodeResolver { get; private set; }
+
+        public Devirtualizer(EazModule module)
 			: this(module, DevirtualizeOptions.Nothing)
 		{
 		}
@@ -56,23 +63,24 @@ namespace eazdevirt
 		}
 
 		public Devirtualizer(EazModule module, DevirtualizeOptions options, ILogger logger)
-			: this(module, options, null, logger)
+			: this(module, options, null, logger, null)
 		{
 		}
 
 		public Devirtualizer(EazModule module, IList<Type> fixers, ILogger logger)
-			: this(module, DevirtualizeOptions.Nothing, fixers, logger)
+			: this(module, DevirtualizeOptions.Nothing, fixers, logger, null)
 		{
 		}
 
-		public Devirtualizer(EazModule module, DevirtualizeOptions options, IList<Type> fixers, ILogger logger)
+		public Devirtualizer(EazModule module, DevirtualizeOptions options, IList<Type> fixers, ILogger logger, OpCodeResolver resolver)
 		{
 			this.Parent = module;
 			this.Options = options;
 			this.Injector = new AttributeInjector(module);
 			this.Fixers = (fixers != null ? fixers : new List<Type>());
 			this.Logger = (logger != null ? logger : DummyLogger.NoThrowInstance);
-		}
+			this.UnknownOpCodeResolver = resolver;
+        }
 
 		public DevirtualizeResults Devirtualize()
 		{
@@ -102,7 +110,7 @@ namespace eazdevirt
 
 			foreach (var method in methods)
 			{
-				var reader = new VirtualizedMethodBodyReader(method, this.Logger, this.Parent.Version);
+				var reader = new VirtualizedMethodBodyReader(method, this.Logger, this.Parent.Version, this.UnknownOpCodeResolver);
 				Exception exception = null, fixerException = null;
 
 				//Console.WriteLine("Starting to devirtualize {0}", method.Method.FullName);

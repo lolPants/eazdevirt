@@ -43,6 +43,7 @@
     <Compile Include="Core\AttributeInjector.cs" />
     <Compile Include="Core\CryptoStreamBase.cs" />
     <Compile Include="Core\EazBinaryReader.cs" />
+    <Compile Include="Core\OpCodeResolver.cs" />
     <Compile Include="Core\SerializationVersion.cs" />
     <Compile Include="Core\SpecialCode.cs" />
     <Compile Include="Core\IPositionTranslator.cs" />

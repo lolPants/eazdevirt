@@ -24,6 +24,11 @@ namespace eazdevirt
 		/// </summary>
 		public String OutputPath = null;
 
+		/// <summary>
+		/// Path to reference assembly used to figure out opcodes.
+		/// </summary>
+		public String ReferencePath = null;
+
 		public Boolean Help = false;
 		public UInt32 VerboseLevel = 0;
 
