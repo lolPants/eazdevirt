@@ -343,9 +343,6 @@ namespace eazdevirt.IO
 
 		protected Instruction ReadOneInstruction_CIL(VirtualOpCode virtualInstruction)
 		{
-			if (virtualInstruction.Name == "Blt_S") {
-				int i = 0;
-			}
 			OpCode opcode = virtualInstruction.OpCode.ToOpCode();
 
 			Instruction instruction = new Instruction(opcode);
