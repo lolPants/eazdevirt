@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
+using eazdevirt.Core;
 
 namespace eazdevirt
 {
@@ -168,12 +169,20 @@ namespace eazdevirt
 			if (!TryLoadModule(options.AssemblyPath, logger, out module))
 				return;
 
+			OpCodeResolver resolver = null;
+			if(options.ReferencePath != null)
+			{
+                ModuleContext modCtx = ModuleDef.CreateModuleContext(); // do we need a seperate context here?
+                ModuleDefMD referenceModule = ModuleDefMD.Load(options.ReferencePath, modCtx);
+				resolver = new OpCodeResolver(referenceModule);
+            }
+
 			// Setup devirtualize options
 			var opts = DevirtualizeOptions.Nothing;
 			if (options.InjectAttributes)
 				opts |= DevirtualizeOptions.InjectAttributes;
 
-			Devirtualizer devirtualizer = new Devirtualizer(module, opts, options.MethodFixers, logger);
+			Devirtualizer devirtualizer = new Devirtualizer(module, opts, options.MethodFixers, logger, resolver);
 
 			var results = devirtualizer.Devirtualize((attempt) => {
 				if (attempt.Successful)
@@ -189,6 +198,10 @@ namespace eazdevirt
 			}
 			else if (!options.Verbose)
 				Console.WriteLine();
+
+			// If we identified any new opcodes create a generation file
+			if (resolver != null && resolver.IdentifiedCodes.Count() > 0)
+				File.WriteAllText("Detection.Generated.cs", resolver.GenerateCode());
 
 			Console.WriteLine("Devirtualized {0}/{1} methods",
 				results.DevirtualizedCount, results.MethodCount);

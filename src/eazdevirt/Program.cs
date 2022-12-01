@@ -61,7 +61,7 @@ namespace eazdevirt
 					v => options.Action = ProgramAction.Devirtualize },
 				{ "g|generate", "generate a test executable to be protected and analysed",
 					v => options.Action = ProgramAction.Generate },
-				{ "i|instructions", "print virtual opcode information extracted from a protected assembly",
+                { "i|instructions", "print virtual opcode information extracted from a protected assembly",
 					v => options.Action = ProgramAction.Instructions },
 				{ "k|get-key", "extract the integer crypto key from a protected assembly",
 					v => options.Action = ProgramAction.GetKey },
@@ -78,6 +78,8 @@ namespace eazdevirt
 				// `devirtualize` options
 				{ "j|inject", "inject attributes", v => options.InjectAttributes = true },
 				{ "F=|fixers=", "fixers to use", v => options.FixersString = v },
+                { "R=|reference=", "path to the reference assembly to figure out missing opcodes (should have neither control flow obfusecation, nor virtualization enabled)",
+                    v => options.ReferencePath = v },
 
 				// `generate` options
 				{ "I=|instruction-set=", "name of \"instruction sets\" to generate",

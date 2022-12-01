@@ -5,6 +5,7 @@ using de4dot.blocks;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using eazdevirt.Util;
+using eazdevirt.Core;
 
 namespace eazdevirt.IO
 {
@@ -97,14 +98,17 @@ namespace eazdevirt.IO
 		/// </summary>
 		private IList<SerializedExceptionHandler> _exceptionHandlers;
 
-		/// <summary>
-		/// Construct a method body reader given a method stub.
-		/// </summary>
-		/// <param name="method">Method stub</param>
-		/// <param name="version">Serialization version</param>
-		public VirtualizedMethodBodyReader(MethodStub method,
-			SerializationVersion version = SerializationVersion.V1)
-			: this(method, null, version)
+
+        public OpCodeResolver UnknownOpCodeResolver { get; private set; }
+
+        /// <summary>
+        /// Construct a method body reader given a method stub.
+        /// </summary>
+        /// <param name="method">Method stub</param>
+        /// <param name="version">Serialization version</param>
+        public VirtualizedMethodBodyReader(MethodStub method,
+			SerializationVersion version = SerializationVersion.V1, OpCodeResolver resolver = null)
+			: this(method, null, version, resolver)
 		{
 		}
 
@@ -115,7 +119,7 @@ namespace eazdevirt.IO
 		/// <param name="logger">Logger</param>
 		/// <param name="version">Serialization version</param>
 		public VirtualizedMethodBodyReader(MethodStub method, ILogger logger,
-			SerializationVersion version = SerializationVersion.V1)
+			SerializationVersion version = SerializationVersion.V1, OpCodeResolver resolver = null)
 			: base((method != null ? method.Parent : null))
 		{
 			if (method == null)
@@ -124,6 +128,7 @@ namespace eazdevirt.IO
 			this.Method = method;
 			this.Logger = (logger != null ? logger : DummyLogger.NoThrowInstance);
 			this.Version = version;
+			this.UnknownOpCodeResolver = resolver;
 
 			this.Initialize();
 		}
@@ -320,8 +325,11 @@ namespace eazdevirt.IO
 			this.Instructions = new List<Instruction>();
 
 			Int64 finalPosition = this.Stream.Position + codeSize;
-			while(this.Stream.Position < finalPosition)
-				this.Instructions.Add(this.ReadOneInstruction());
+			int index = 0;
+			while (this.Stream.Position < finalPosition)
+			{
+				this.Instructions.Add(this.ReadOneInstruction(index));
+			}
 
 			// After fully read, branch operands can be fixed
 			this.FixBranches();
@@ -335,9 +343,6 @@ namespace eazdevirt.IO
 
 		protected Instruction ReadOneInstruction_CIL(VirtualOpCode virtualInstruction)
 		{
-			if (virtualInstruction.Name == "Blt_S") {
-				int i = 0;
-			}
 			OpCode opcode = virtualInstruction.OpCode.ToOpCode();
 
 			Instruction instruction = new Instruction(opcode);
@@ -405,17 +410,24 @@ namespace eazdevirt.IO
         /// Read a virtual instruction as a CIL instruction.
         /// </summary>
         /// <returns>CIL instruction</returns>
-
-        int index = 0;
-        protected Instruction ReadOneInstruction()
+        protected Instruction ReadOneInstruction(int index)
 		{
 			Int32 virtualOpcode = this.Reader.ReadInt32();
 			this.LastVirtualOpCode = virtualOpcode;
 
             VirtualOpCode virtualInstruction;
 
-			if (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+			while(!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
 			{
+				if(this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+				{
+                    if(this.UnknownOpCodeResolver != null)
+					{
+						if (this.UnknownOpCodeResolver.ForceIdentify(this.Method, index, virtualInstruction))
+							continue; // we were successfull identifying the opcode
+					}
+
+                }
 #if DEBUG
 				this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction);
 
@@ -424,23 +436,19 @@ namespace eazdevirt.IO
 				throw new Exception(String.Format("Unknown virtual opcode: {0} (0x{0:X8})", virtualOpcode));
 #else
 
-                    throw new OriginalOpcodeUnknownException(virtualInstruction);
+                throw new OriginalOpcodeUnknownException(virtualInstruction);
 #endif
 			}
-			else
-			{
 #if DEBUG
-                if (virtualInstruction.HasCILOpCode)
-                {
-                    //Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
-                }
-                else
-                {
-                    //Console.WriteLine("Found special");
-                }
-#endif
-                index++;
+            if (virtualInstruction.HasCILOpCode)
+            {
+                //Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
             }
+            else
+            {
+                //Console.WriteLine("Found special");
+            }
+#endif
 
 			this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
 
