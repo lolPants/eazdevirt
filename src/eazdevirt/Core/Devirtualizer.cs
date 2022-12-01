@@ -140,26 +140,7 @@ namespace eazdevirt
 
 
 					// short form jumps seem to be too far sometimes, simply force them to normal jumps
-					for (int i = 0; i < body.Instructions.Count; i++)
-					{
-						var inst = body.Instructions[i];
-						if (inst.OpCode.Code == Code.Beq_S)
-						{
-							inst.OpCode = OpCodes.Beq;
-                        }
-                        else if (inst.OpCode.Code == Code.Bne_Un_S)
-                        {
-                            inst.OpCode = OpCodes.Bne_Un;
-						}
-						else if (inst.OpCode.Code == Code.Ble_S)
-						{
-							inst.OpCode = OpCodes.Ble;
-                        }
-                        else if (inst.OpCode.Code == Code.Blt_S)
-                        {
-                            inst.OpCode = OpCodes.Blt;
-                        }
-					}
+					body.SimplifyBranches();
 
 					// Perform fixes
 					try
