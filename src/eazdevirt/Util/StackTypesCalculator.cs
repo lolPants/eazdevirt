@@ -353,7 +353,7 @@ namespace eazdevirt.Util
 					{
 						case ExceptionHandlerType.Catch:
 						case ExceptionHandlerType.Finally:
-							var state = States(handler.FilterStart).Item1; // State before try { ... }
+							var state = States(handler.TryStart).Item1; // State before try { ... }
 							if (handler.HandlerType == ExceptionHandlerType.Catch)
 								state.Push(handler.CatchType.ToTypeSig()); // Push the exception type being caught
 							Walk(handler.HandlerStart, state);

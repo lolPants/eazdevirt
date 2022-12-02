@@ -387,6 +387,7 @@ namespace eazdevirt
 			if (!this.IsIdentified)
 				this.Parent.IdentifiedOpCodes.Add(this.VirtualCode, this);
 			this.DetectAttribute = new DetectAttribute(code);
+			this.IsIdentified = true;
 		}
 	}
 }
