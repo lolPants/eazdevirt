@@ -443,11 +443,11 @@ namespace eazdevirt.IO
 #if DEBUG
             if (virtualInstruction.HasCILOpCode)
             {
-                //Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
+                Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
             }
             else
             {
-                //Console.WriteLine("Found special");
+                Console.WriteLine("Found special");
             }
 #endif
 
@@ -666,10 +666,10 @@ namespace eazdevirt.IO
 
 		protected virtual UInt32[] ReadInlineSwitch(Instruction instr)
 		{
-			UInt32 destCount = this.Reader.ReadUInt32();
+			UInt32 destCount = (UInt32)this.Reader.ReadInt32();
 			UInt32[] branchDests = new UInt32[destCount];
 			for (UInt32 i = 0; i < destCount; i++)
-				branchDests[i] = this.Reader.ReadUInt32();
+				branchDests[i] = (UInt32)this.Reader.ReadInt32();
 			return branchDests;
 		}
 
