@@ -329,6 +329,7 @@ namespace eazdevirt.IO
 			while (this.Stream.Position < finalPosition)
 			{
 				this.Instructions.Add(this.ReadOneInstruction(index));
+				index++;
 			}
 
 			// After fully read, branch operands can be fixed

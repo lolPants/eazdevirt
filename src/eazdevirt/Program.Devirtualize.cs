@@ -174,7 +174,7 @@ namespace eazdevirt
 			{
                 ModuleContext modCtx = ModuleDef.CreateModuleContext(); // do we need a seperate context here?
                 ModuleDefMD referenceModule = ModuleDefMD.Load(options.ReferencePath, modCtx);
-				resolver = new OpCodeResolver(referenceModule);
+				resolver = new OpCodeResolver(referenceModule, module);
             }
 
 			// Setup devirtualize options
