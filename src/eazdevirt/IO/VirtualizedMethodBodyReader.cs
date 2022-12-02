@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using de4dot.blocks;
 using dnlib.DotNet;
 using dnlib.DotNet.Emit;
 using eazdevirt.Util;
@@ -128,9 +127,9 @@ namespace eazdevirt.IO
 			this.Method = method;
 			this.Logger = (logger != null ? logger : DummyLogger.NoThrowInstance);
 			this.Version = version;
-			this.UnknownOpCodeResolver = resolver;
+            this.UnknownOpCodeResolver = resolver;
 
-			this.Initialize();
+            this.Initialize();
 		}
 
 		/// <summary>
@@ -325,14 +324,15 @@ namespace eazdevirt.IO
 			this.Instructions = new List<Instruction>();
 
 			Int64 finalPosition = this.Stream.Position + codeSize;
-			int index = 0;
-			while (this.Stream.Position < finalPosition)
-			{
-				this.Instructions.Add(this.ReadOneInstruction(index));
-			}
+            int index = 0;
+            while (this.Stream.Position < finalPosition)
+            {
+                this.Instructions.Add(this.ReadOneInstruction(index));
+				index++;
+            }
 
-			// After fully read, branch operands can be fixed
-			this.FixBranches();
+            // After fully read, branch operands can be fixed
+            this.FixBranches();
 
 			// Also set real exception handlers
 			this.FixExceptionHandlers();
@@ -411,21 +411,21 @@ namespace eazdevirt.IO
         /// </summary>
         /// <returns>CIL instruction</returns>
         protected Instruction ReadOneInstruction(int index)
-		{
-			Int32 virtualOpcode = this.Reader.ReadInt32();
-			this.LastVirtualOpCode = virtualOpcode;
+        {
+            Int32 virtualOpcode = this.Reader.ReadInt32();
+            this.LastVirtualOpCode = virtualOpcode;
 
             VirtualOpCode virtualInstruction;
 
-			while(!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
-			{
-				if(this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
-				{
-                    if(this.UnknownOpCodeResolver != null)
-					{
-						if (this.UnknownOpCodeResolver.ForceIdentify(this.Method, index, virtualInstruction))
-							continue; // we were successfull identifying the opcode
-					}
+            while (!this.Parent.IdentifiedOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+            {
+                if (this.Parent.AllOpCodes.TryGetValue(virtualOpcode, out virtualInstruction))
+                {
+                    if (this.UnknownOpCodeResolver != null)
+                    {
+                        if (this.UnknownOpCodeResolver.ForceIdentify(this.Method, index, virtualInstruction))
+                            continue; // we were successfull identifying the opcode
+                    }
 
                 }
 #if DEBUG
@@ -438,19 +438,19 @@ namespace eazdevirt.IO
 
                 throw new OriginalOpcodeUnknownException(virtualInstruction);
 #endif
-			}
+            }
 #if DEBUG
             if (virtualInstruction.HasCILOpCode)
             {
-                //Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
+                Console.WriteLine("{0} Found opcode {1}", index, virtualInstruction.OpCode);
             }
             else
             {
-                //Console.WriteLine("Found special");
+                Console.WriteLine("Found special");
             }
 #endif
 
-			this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
+            this.VirtualOffsets.Add(this.CurrentILOffset, this.CurrentVirtualOffset);
 
 			if (virtualInstruction.HasCILOpCode)
 				return ReadOneInstruction_CIL(virtualInstruction);
@@ -665,16 +665,16 @@ namespace eazdevirt.IO
 
 		protected virtual UInt32[] ReadInlineSwitch(Instruction instr)
 		{
-			UInt32 destCount = this.Reader.ReadUInt32();
+			UInt32 destCount = (UInt32)this.Reader.ReadInt32();
 			UInt32[] branchDests = new UInt32[destCount];
 			for (UInt32 i = 0; i < destCount; i++)
-				branchDests[i] = this.Reader.ReadUInt32();
+				branchDests[i] = (UInt32)this.Reader.ReadInt32();
 			return branchDests;
 		}
 
 		protected virtual IField ReadInlineField(Instruction instruction)
 		{
-			return this.Resolver.ResolveField(this.Reader.ReadInt32Special());
+			return this.Resolver.ResolveField(this.Reader.ReadInt32());
 		}
 
 		protected virtual MethodSig ReadInlineSig(Instruction instruction)
@@ -684,22 +684,22 @@ namespace eazdevirt.IO
 
 		protected virtual ITokenOperand ReadInlineTok(Instruction instruction)
 		{
-			return this.Resolver.ResolveToken(this.Reader.ReadInt32Special());
+			return this.Resolver.ResolveToken(this.Reader.ReadInt32());
 		}
 
 		protected virtual IMethod ReadInlineMethod(Instruction instruction)
 		{
-			return this.Resolver.ResolveMethod(this.Reader.ReadInt32Special());
+			return this.Resolver.ResolveMethod(this.Reader.ReadInt32());
 		}
 
 		protected virtual ITypeDefOrRef ReadInlineType(Instruction instruction)
 		{
-			return this.Resolver.ResolveType(this.Reader.ReadInt32Special());
+			return this.Resolver.ResolveType(this.Reader.ReadInt32());
 		}
 
 		protected virtual String ReadInlineString(Instruction instruction)
 		{
-			return this.Resolver.ResolveString(this.Reader.ReadInt32Special());
+			return this.Resolver.ResolveString(this.Reader.ReadInt32());
 		}
 
 		public IList<Parameter> Parameters = new List<Parameter>();
@@ -760,7 +760,7 @@ namespace eazdevirt.IO
 			public Int32 ReturnTypeCode { get; set; }
 			public Int32 DeclaringType { get; set; }
 			public byte BindingFlags { get; set; }
-			public Boolean IsStatic { get { return (BindingFlags & 8) != 0; } }
+			public Boolean IsStatic { get { return (BindingFlags & 1) != 0; } }
 			public String Name { get; set; }
 			public SerializedParameter[] Parameters { get; set; }
 			public SerializedLocal[] Locals { get; set; }
@@ -772,24 +772,24 @@ namespace eazdevirt.IO
 
 			private void Deserialize(BinaryReader reader)
 			{
-				var count = (Int32)reader.ReadInt16();
+                this.Name = reader.ReadString();
+                this.ReturnTypeCode = reader.ReadInt32();
 
+                var count = (Int32)reader.ReadInt16();
 				this.Locals = new SerializedLocal[count];
 				for (Int32 i = 0; i < count; i++) {
 					this.Locals[i] = new SerializedLocal(reader);
 				}
 
-				this.BindingFlags = reader.ReadByte();
-				this.Name = reader.ReadString();
+                var parameterCount = reader.ReadInt16();
+                this.Parameters = new SerializedParameter[parameterCount];
+                for (Int32 i = 0; i < parameterCount; i++)
+                {
+                    this.Parameters[i] = new SerializedParameter(reader);
+                }
 
-				this.DeclaringType = reader.ReadInt32();
-				var parameterCount = reader.ReadInt16();
-
-				this.Parameters = new SerializedParameter[parameterCount];
-				for (Int32 i = 0; i < parameterCount; i++) {
-					this.Parameters[i] = new SerializedParameter(reader);
-				}
-				this.ReturnTypeCode = reader.ReadInt32();
+                this.BindingFlags = reader.ReadByte();
+                this.DeclaringType = reader.ReadInt32();
 			}
         }
 
@@ -897,12 +897,11 @@ namespace eazdevirt.IO
 				this.VirtualHandlerType = reader.ReadByte();
 				this.VirtualCatchType = reader.ReadInt32();
 
-				this.VirtualTryStart = reader.ReadUInt32();
+                this.VirtualTryLength = reader.ReadUInt32();
 				this.VirtualHandlerStart = reader.ReadUInt32();
-				this.VirtualTryLength = reader.ReadUInt32();
-
 				this.VirtualFilterStart = reader.ReadUInt32();
-			}
-		}
+				this.VirtualTryStart = reader.ReadUInt32();
+            }
+        }
 	}
 }

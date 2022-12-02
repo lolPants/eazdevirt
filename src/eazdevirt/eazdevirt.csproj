@@ -41,8 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\AttributeInjector.cs" />
+    <Compile Include="Core\BinaryReaders\EazBinaryReader2018_1.cs" />
+    <Compile Include="Core\BinaryReaders\EazBinaryReader2018_3.cs" />
     <Compile Include="Core\CryptoStreamBase.cs" />
-    <Compile Include="Core\EazBinaryReader.cs" />
     <Compile Include="Core\OpCodeResolver.cs" />
     <Compile Include="Core\SerializationVersion.cs" />
     <Compile Include="Core\SpecialCode.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Core\Types\CryptoStreamDef.cs" />
     <Compile Include="Core\Types\ITypeDefProvider.cs" />
     <Compile Include="Core\V2\CryptoStreamV2.cs" />
+    <Compile Include="Detection\Generated\2018_1.cs" />
     <Compile Include="Detection\V1\Detection.Conv.Cflow.cs" />
     <Compile Include="Detection\InstructionDetectorBase.cs" />
     <Compile Include="Detection\IInstructionDetector.cs" />
@@ -120,6 +122,7 @@
       <Name>dnlib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

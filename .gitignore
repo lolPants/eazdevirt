@@ -149,3 +149,8 @@ $RECYCLE.BIN/
 
 # Mac crap
 .DS_Store
+*.vsidx
+*.lock
+.vs/eazdevirt/v17/HierarchyCache.v1.txt
+*.vsidx
+*.vsidx
